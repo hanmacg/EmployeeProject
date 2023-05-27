@@ -1,0 +1,56 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+# Purpose
+
+This is my data cleaning for my machine learning project on employee attrition.
+
+
+```{r}
+
+rm(list = ls()) # Clean your environment:
+gc() # garbage collection - It can be useful to call gc after a large object has been removed, as this may prompt R to return memory to the operating system.
+library(tidyverse)
+list.files('code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>% as.list() %>% walk(~source(.))
+```
+
+First I read in the data
+```{r}
+employeedat <- read.csv("C:/Users/hanna/OneDrive/Documents/Economics Masters/Data Science/Machine learning/data/Employee.csv")
+head(employeedat)
+tab <- employeedat %>% select(Education, Age, Gender, LeaveOrNot)
+as_tibble(tab)
+```
+
+Next I do some cleaning as many of the variables are characters/categorical
+
+```{r}
+#create a binary variable for gender - female is 0 and male is 1
+employeedat <- employeedat %>%
+  mutate(gender_numeric = ifelse(Gender == "Female", 0, 1))
+#create a binary variable for ever-benched - i.e., they kept out of projects for a month or more
+employeedat <- employeedat %>%
+  mutate(benched_numeric = ifelse(EverBenched == "No", 0, 1))
+#create a variable for education category where Bachelors =0, Master's =1 and PhD = 2
+employeedat <- employeedat %>%
+  mutate(education_numeric = case_when(
+    Education == "Bachelors" ~ 0,
+    Education == "Masters" ~ 1,
+    Education == "PHD" ~ 2
+  ))
+
+#How many PHD individuals?
+phd_count <- sum(employeedat$Education == "PHD")
+
+#create binary variables for whether a person is from Bangalore, Pune or New Delhi
+employeedat <- employeedat %>%
+  mutate(bangalore = ifelse(City == "Bangalore", 1, 0)) %>% 
+    mutate(pune = ifelse(City == "Pune", 1, 0)) %>% 
+    mutate(new_delhi = ifelse(City == "New Delhi", 1, 0))
+
+
+```
+
