@@ -54,3 +54,49 @@ employeedat <- employeedat %>%
 
 ```
 
+Next, I visualise my data using ggplot
+
+```{r}
+pacman::p_load(forcats)
+
+#graphing city spread among employees
+employeedat %>% 
+mutate(City2 = forcats::fct_infreq(City)) %>% 
+ggplot() + 
+geom_bar(aes(x = City2), fill = "steelblue", alpha = 0.7) + 
+    
+coord_flip() + 
+labs(x = "Count", y = "City", title = "City spread among employees", 
+    caption = "Data from Kaggle") 
+
+
+#graph spread of education
+employeedat %>% 
+mutate(Education2 = forcats::fct_infreq(Education)) %>% 
+ggplot() + 
+geom_bar(aes(x = Education2), fill = "steelblue", alpha = 0.7) + 
+    
+coord_flip() + 
+labs(x = "Count", y = "Education", title = "Education spread among employees", 
+    caption = "Data from Kaggle") 
+
+##Looking at employee attrition against age. It seems that attrition is higher among younger individuals and lower for older individuals.
+
+ggplot(employeedat, aes(x = Age, y = LeaveOrNot)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
+  labs(x = "Age", y = "Employee Attrition") +
+  theme_minimal()
+
+g <-employeedat %>% 
+ggplot() + 
+geom_line(aes(x = ExperienceInCurrentDomain, y = Age, color = LeaveOrNot), alpha = 0.8, 
+    size = 1)
+
+# Notice that I used alpha to adjust the line opacity (useful
+# when having overlapping lines e.g.)
+
+print(g)
+
+```
+
