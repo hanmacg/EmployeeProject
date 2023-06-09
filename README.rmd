@@ -100,3 +100,22 @@ print(g)
 
 ```
 
+
+Decision trees
+```{r}
+pacman::p_load(dplyr, ggplot2, rpart, caret, rpart.plot, 
+               vip, pdp, doParallel, foreach, 
+               ipred, ranger, gbm, xgboost, AmesHousing)
+pacman::p_load(rsample)
+
+split  <- rsample::initial_split(employeedat, prop = 0.7, 
+                                 strata = "LeaveOrNot")
+emp_train  <- rsample::training(split)
+emp_dt1 <- rpart(
+  formula = LeaveOrNot ~ .,
+  data    = emp_train,
+  method  = "anova"
+)
+emp_dt1
+```
+
