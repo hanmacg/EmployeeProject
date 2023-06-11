@@ -54,7 +54,7 @@ employeedat <- employeedat %>%
 
 ```
 
-Next, I visualise my data using ggplot
+Next, I conduct some exploratory data analysis to see the relationships between my target and features of the dataset. I visualise my data using ggplot.
 
 ```{r}
 pacman::p_load(forcats)
@@ -100,8 +100,111 @@ print(g)
 
 ```
 
+Split the data into a test and training set. I use simple random sampling methods to make a 70-30 split between my training and testing data. 
+
+```{r}
+set.seed(123)  # Set the seed for reproducibility
+split_1  <- initial_split(employeedat, prop = 0.7)  # Split the dataset 
+train  <- training(split_1)  # Training set
+test   <- testing(split_1)  # Test set
+
+#I then look at some resampling methods. Validation based approaches split the training set even further to create a new training and validation set. Resampling methods repeatedly fit out model to different parts of the training data and test against different validation sets.  
+#firstly the bootstrap method. Make sure to have the rsample package downloaded. 
+bootstraps(employeedat, times = 10)
+
+#next is the k-fold cross validation 
+vfold_cv(employeedat, v = 10)
+
+cv <- trainControl(
+  method = "repeatedcv", 
+  number = 10, 
+  repeats = 5
+)
+
+hyper_grid <- expand.grid(k = seq(2, 25, by = 1))
+
+knn_fit <- train(
+  LeaveOrNot ~ ., 
+  data = train, 
+  method = "knn", 
+  trControl = cv, 
+  tuneGrid = hyper_grid,
+  metric = "RMSE"
+)
+
+knn_fit
+
+# the above chose k =11 
+
+ggplot(knn_fit)
+
+
+```
+
+It is also important to consider the bias-variance trade-off. Prediction errors are generally a result of either bias or variance. In general, decreasing bias will almost always lead to greater variance. Bias is the difference between the expected prediction and the correct value (linear models have high levels of bias).
+
+Variance error is the variability of a model prediction for a given data point. Some models can potentially overfit the training data, resulting in accurate results against the training data but typically poor results against the test data. 
+
+We can adjust the model hyperparameters to achieve the best mix of bias and variance. 
+
+
+Target engineering:
+
+Since my predictor variable (Leave or Not) is binary, there is no need for target engineering.
+
+Feature Engineering:
+Most of the features are categorical. 
+
+
+Linear regression and MLR:
+```{r}
+model1 <- lm(LeaveOrNot ~ education_numeric, employeedat)
+model2 <- lm(LeaveOrNot ~ education_numeric + gender_numeric, employeedat)
+
+set.seed(123)  
+(cv_model1 <- train(form = LeaveOrNot ~ education_numeric, 
+  data = train, 
+  method = "lm",
+  trControl = trainControl(method = "cv", number = 10)
+))
+
+set.seed(123)  
+(cv_model2 <- train(form = LeaveOrNot ~ education_numeric + gender_numeric, 
+  data = train, 
+  method = "lm",
+  trControl = trainControl(method = "cv", number = 10)
+))
+
+resamp <- resamples(list(model1 = cv_model1, model2 = cv_model2))
+summary_resamp <- summary(resamp)
+print(summary_resamp)
+
+#using glmnet to conduct regularised regression analysis - however, this is better suited to continuous or count outcome variables.
+
+X <- model.matrix(LeaveOrNot ~ ., train)[, -1]
+Y <- train$LeaveOrNot
+
+ridge <- cv.glmnet(
+  x = X,
+  y = Y,
+  alpha = 0)
+plot(ridge)
+
+lasso <- cv.glmnet(
+  x = X,
+  y = Y,
+  alpha = 1)
+
+plot(lasso)
+
+cv_glmnet$bestTune
+
+```
+**remember to talk about the loss function
 
 Decision trees
+
+For decision trees, we use annova instead of lm.
 ```{r}
 pacman::p_load(dplyr, ggplot2, rpart, caret, rpart.plot, 
                vip, pdp, doParallel, foreach, 
@@ -114,8 +217,99 @@ emp_train  <- rsample::training(split)
 emp_dt1 <- rpart(
   formula = LeaveOrNot ~ .,
   data    = emp_train,
-  method  = "anova"
+  method  = "class"
 )
 emp_dt1
+plot(emp_dt1)
+
+emp_test <- rsample::testing(split)
+predictions
+
+actual_labels <- emp_test$LeaveOrNot
+
+# Calculate the accuracy
+accuracy <- sum(predictions == actual_labels) / length(actual_labels) * 100
+
+# Print the accuracy
+cat("Accuracy:", accuracy, "%\n")
+
+##pruning - before pruning, variance is high and bias is low
+
+cv_emp_dt1 <- prune(emp_dt1, cp = emp_dt1$cptable[which.min(emp_dt1$cptable[,"xerror"]),"CP"])
+
+plotcp(emp_dt1)
+
+plot(cv_emp_dt1)
+text(cv_emp_dt1)
+
+cv_emp_dt1
+
+
+
 ```
 
+
+Bagging - bootstrap aggregating. This is where multiple bootstrap copies of the original training data are created. For classification, predictions combined by averaging estimated class. For regression, new predictions are made by averaging predictions. Works well for high-variance algorithms such as decision trees of KNN.
+
+```{r}
+library(randomForest)
+# train bagged model
+set.seed(123)
+
+# Train bagged model
+emp_bag1 <- randomForest(
+  formula = LeaveOrNot ~ .,
+  data = emp_train,
+  ntree = 100,  # Number of trees
+  mtry = ncol(emp_train) - 1,  # Number of predictors sampled for each tree
+  replace = TRUE,  # Sampling with replacement
+  importance = TRUE  # Compute variable importance
+)
+
+emp_bag1
+
+```
+
+The issue with bagging is that the trees in bagging are not independent (tree correlation). Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. Number of trees should be 10 times number of feautures, as a rule of thumb. 
+
+```{r}
+library(ranger)
+# number of features
+n_features <- length(setdiff(names(emp_train), "LeaveOrNot"))
+
+emp_rf1 <- ranger(
+  LeaveOrNot ~ ., 
+  data = emp_train,
+  mtry = floor(sqrt(n_features)),
+  respect.unordered.factors = "order",
+  seed = 123)
+
+(default_rmse <- sqrt(emp_rf1$prediction.error))
+```
+
+There are several hyperparamters to consider in this model: he number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
+
+Node size is the most common method to control tree complexity.
+
+The next possible model is a GSM (gradient boosting models). These build an ensemble of shallow trees in sequence with each tree learning and improving on the previous one. Models are added sequentially. It attacks the variance-bias tradeoff by starting with a weak model.
+
+Gradient boosting is a gradient descent algorithm.
+
+In a simple GBM, there are two catgeroeis of hyperparameters (boosting and tree-specific). Under boosting, the two main hyperparameters are number of trees and learning rate (shrinkage). Two main tree parameters are tree depth and minimum number of observations in terminal nodes.
+```{r}
+library(gbm)
+set.seed(123)  # for reproducibility
+emp_gbm1 <- gbm(
+  formula = LeaveOrNot ~ .,
+  data = emp_train,
+  distribution = "gaussian",  # SSE loss function
+  n.trees = 5000,
+  shrinkage = 0.1,
+  interaction.depth = 3,
+  n.minobsinnode = 10,
+  cv.folds = 10
+)
+#check errors and data for this
+```
+
+Lastly, XGBoost model - this requires us to encode all categorical variables numerically. it provides traditional boosting and tree-based hyperparameters. Xgboost also provides additional hyperparameters that can help reduce the chances of overfitting, leading to imporved accuracy.
