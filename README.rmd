@@ -277,6 +277,8 @@ library(ranger)
 # number of features
 n_features <- length(setdiff(names(emp_train), "LeaveOrNot"))
 
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+
 emp_rf1 <- ranger(
   LeaveOrNot ~ ., 
   data = emp_train,
@@ -285,11 +287,123 @@ emp_rf1 <- ranger(
   seed = 123)
 
 (default_rmse <- sqrt(emp_rf1$prediction.error))
+
+#prediction
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+predictions <- predict(emp_rf1, data = emp_test)
+predictions
+predicted_labels <- predictions$predictions
+predicted_labels
+
+#accuracy
+actual_labels <- emp_test$LeaveOrNot
+accuracy <- sum(predictions$predictions == actual_labels) / length(actual_labels)
+accuracy
+
+#precision
+precision <- sum(predicted_labels == 1 & actual_labels == 1) / sum(predicted_labels == 1)
+precision
+
+#recall
+recall <- sum(predicted_labels == 1 & actual_labels == 1) / sum(actual_labels == 1)
+recall
+
+#f1-score
+f1_score <- 2 * (precision * recall) / (precision + recall)
+f1_score
+
+
+library(pROC)
+predicted_probs <- as.numeric(predictions$predictions)
+
+# Convert the actual labels to a numeric format (0 and 1)
+numeric_labels <- as.numeric(actual_labels) - 1
+
+# Calculate the ROC curve and AUC-ROC
+roc_obj <- roc(numeric_labels, predicted_probs)
+auc_roc <- auc(roc_obj)
+auc_roc
+
 ```
 
 There are several hyperparamters to consider in this model: he number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
 
 Node size is the most common method to control tree complexity.
+
+The first parameter I am going to adjust is the number of trees. If I have 15 variables, I will make 150 trees. The defualt above was 500 trees. 
+```{r}
+n_features <- length(setdiff(names(emp_train), "LeaveOrNot"))
+
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+
+emp_rf1 <- ranger(
+  LeaveOrNot ~ ., 
+  data = emp_train,
+  mtry = floor(sqrt(n_features)),
+  num.trees = 150, 
+  respect.unordered.factors = "order",
+  seed = 123)
+
+(default_rmse <- sqrt(emp_rf1$prediction.error))
+```
+
+We could alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this is a classification problem.
+
+I next look at adjusting the tree complexity. The hyperparameter that I use is node size. The default used above was a node size of 1. Small values for node sieze result in more complex trees which potentially capture more patterns in the data but may lead to overfitting. Increasing the node size leads to simpler trees that are less prone to overfitting but may overlook finer patterns in the data.
+
+```{r}
+emp_node5 <- ranger(
+  LeaveOrNot ~ ., 
+  data = emp_train,
+  mtry = floor(sqrt(n_features)),
+  num.trees = 150,
+  respect.unordered.factors = "order",
+  seed = 123,
+  min.node.size = 5  # Adjust the node size here
+)
+
+(default_rmse <- sqrt(emp_node5$prediction.error))
+```
+
+Next, it is worth examining sample size and whether to sample with or without replacement. In datasets with many categorical variables, such as this one, sampling with replacement can lead to biased variable split selection. 
+
+```{r}
+# re-run model with impurity-based variable importance
+rf_impurity <- ranger(
+  formula = LeaveOrNot ~ ., 
+  data = emp_train, 
+  num.trees = 150,
+  mtry = floor(sqrt(n_features)),
+  min.node.size = 1,
+  sample.fraction = .80,
+  replace = FALSE,
+  importance = "impurity",
+  respect.unordered.factors = "order",
+  verbose = FALSE,
+  seed  = 123
+)
+
+# re-run model with permutation-based variable importance
+rf_permutation <- ranger(
+  formula = LeaveOrNot ~ ., 
+  data = emp_train, 
+  num.trees = 150,
+  mtry = floor(sqrt(n_features)),
+  min.node.size = 1,
+  sample.fraction = .80,
+  replace = FALSE,
+  importance = "permutation",
+  respect.unordered.factors = "order",
+  verbose = FALSE,
+  seed  = 123
+)
+p1 <- vip::vip(rf_impurity, num_features = 14, bar = FALSE)
+p2 <- vip::vip(rf_permutation, num_features = 14, bar = FALSE)
+
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+
+```
+From the above plots, we can see that the joining year is the most important determinant for employee attrition.
 
 The next possible model is a GSM (gradient boosting models). These build an ensemble of shallow trees in sequence with each tree learning and improving on the previous one. Models are added sequentially. It attacks the variance-bias tradeoff by starting with a weak model.
 
