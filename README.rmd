@@ -88,15 +88,156 @@ ggplot(employeedat, aes(x = Age, y = LeaveOrNot)) +
   labs(x = "Age", y = "Employee Attrition") +
   theme_minimal()
 
-g <-employeedat %>% 
-ggplot() + 
-geom_line(aes(x = ExperienceInCurrentDomain, y = Age, color = LeaveOrNot), alpha = 0.8, 
-    size = 1)
+#Plotting attrition rates by education
+ggplot(employeedat, aes(x = Education, fill = factor(LeaveOrNot))) +
+  geom_bar(position = "fill") +
+  labs(x = "Education", y = "Attrition Rate", fill = "Attrition") +
+  ggtitle("Attrition Rates by Education")
 
-# Notice that I used alpha to adjust the line opacity (useful
-# when having overlapping lines e.g.)
+#Plotting attrition rates by joining year
+ggplot(employeedat, aes(x = factor(JoiningYear), fill = factor(LeaveOrNot))) +
+  geom_bar(position = "fill") +
+  labs(x = "Joining Year", y = "Attrition Rate", fill = "Attrition") +
+  ggtitle("Attrition Rates by Joining Year") + scale_fill_manual(values = c("lavender", "grey"))+ theme_minimal()
 
-print(g)
+
+#scatter plot of age and experience
+ggplot(employeedat, aes(x = Age, y = ExperienceInCurrentDomain, color = factor(LeaveOrNot))) +
+  geom_point() +
+  labs(x = "Age", y = "Experience", color = "Attrition") +
+  ggtitle("Relationship between Age, Experience, and Attrition")
+
+
+ggplot(employeedat, aes(x = Age)) +
+  geom_histogram(binwidth = 2, fill = "lightblue", color = "black") +
+  labs(x = "Age", y = "Count") +
+  ggtitle("Distribution of Age") + theme_minimal()
+
+
+ggplot(employee_data, aes(x = Experience)) +
+  geom_histogram(binwidth = 1, fill = "lightgreen", color = "black") +
+  labs(x = "Experience", y = "Count") +
+  ggtitle("Distribution of Experience")
+
+# g <-employeedat %>% 
+# ggplot() + 
+# geom_line(aes(x = ExperienceInCurrentDomain, y = Age, color = LeaveOrNot), alpha = 0.8, 
+#     size = 1)
+# g
+# 
+# # Notice that I used alpha to adjust the line opacity (useful
+# # when having overlapping lines e.g.)
+# 
+# print(g)
+
+#Table of attrition rate
+attrition_rate_education <- employeedat %>%
+  group_by(Education) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+# Calculate attrition rate by Gender
+attrition_rate_gender <- employeedat %>%
+  group_by(Gender) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by City
+attrition_rate_city <- employeedat %>%
+  group_by(City) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Joining Year
+attrition_rate_year <- employeedat %>%
+  group_by(JoiningYear) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Payment Tier
+attrition_rate_pay <- employeedat %>%
+  group_by(PaymentTier) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+# Print attrition rate tables
+print(attrition_rate_education)
+print(attrition_rate_gender)
+print(attrition_rate_city)
+print(attrition_rate_year)
+print(attrition_rate_pay)
+
+# # Define category labels
+# education_labels <- c("Bachelors", "Masters", "PHD")  # Update with your education categories
+# gender_labels <- c("Female", "Male")  # Update with your gender categories
+# city_labels <- c("Bangalore", "New Delhi", "Pune")  # Update with your city categories
+# year_labels <- c("2012", "2013", "2014", "2015", "2016", "2017", "2018")  # Update with your year categories
+# pay_labels <- c("1", "2", "3")  # Update with your pay categories
+# 
+# # Reshape the attrition rate tables
+# attrition_table <- bind_rows(
+#   Education = attrition_rate_education,
+#   Gender = attrition_rate_gender,
+#   City = attrition_rate_city,
+#   Year = attrition_rate_year,
+#   Pay = attrition_rate_pay
+# ) %>%
+#   rownames_to_column(var = "Category") %>%
+#   mutate(Category = case_when(
+#     Category == "Education" ~ education_labels,
+#     Category == "Gender" ~ gender_labels,
+#     Category == "City" ~ city_labels,
+#     Category == "Year" ~ year_labels,
+#     Category == "Pay" ~ pay_labels,
+#     TRUE ~ NA_character_
+#   )) %>%
+#   select(Category, Attrition_Rate)
+# 
+# kable(attrition_table, caption = "Attrition Rate Table", align = "c") %>%
+#   kable_styling()
+
+
+##attrition rate by education
+attrition_table_e <- attrition_rate_education
+kable(attrition_table_e, caption = "Attrition Rate Table", align = "c") %>%
+  kable_styling()
+
+#attrition rate by gender
+attrition_table_g <- attrition_rate_gender
+kable(attrition_table_g, caption = "Attrition Rate Table", align = "c") %>%
+  kable_styling()
+
+
+combined_table <- bind_rows(
+  Education = attrition_table_e,
+  Gender = attrition_table_g
+)
+kable(combined_table, caption = "Attrition Rate Table", align = "c") %>%
+  kable_styling()
+
+
+########################
+# Term_refs_perc <- function(attrition_rate_education, Terms = c("Bachelors", "Masters", "PHD" )){
+# 
+#     Term_ref_freq <-
+#         attrition_rate_education %>%
+#         group_by(Education) 
+# 
+#     Term_ref_freq
+# 
+# }
+# 
+# Term_refs_perc2 <- function(attrition_rate_gender, Terms = c("Female", "Male" )){
+# 
+#     Term_ref_freq <-
+#         attrition_rate_gender %>%
+#         group_by(Gender) 
+# 
+#     Term_ref_freq
+# 
+# }
+# 
+# Result <- bind_rows(
+#         Term_refs_perc(attrition_rate_education, Terms = c("Bachelors", "Masters", "PHD")),
+#         Term_refs_perc2(attrition_rate_gender, Terms = c("Female", "Male"))
+#     ) 
+# 
+# Result
 
 ```
 
