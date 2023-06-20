@@ -239,6 +239,39 @@ kable(combined_table, caption = "Attrition Rate Table", align = "c") %>%
 # 
 # Result
 
+
+education_labels <- c("Bachelors", "Masters", "PHD") 
+city_labels <- c("Bangalore", "New Delhi", "Pune") 
+gender_labels <- c("Female", "Male")  
+year_labels <- c("2012", "2013", "2014", "2015", "2016", "2017", "2018")  
+pay_labels <- c("1", "2", "3") 
+
+
+# Create tables for Education and City
+education_table <- data.frame(Variable = education_labels, Attrition_Rate = attrition_rate_education$Attrition_Rate)
+city_table <- data.frame(Variable = city_labels, Attrition_Rate = attrition_rate_city$Attrition_Rate)
+gender_table <- data.frame(Variable =gender_labels, Attrition_Rate = attrition_rate_gender$Attrition_Rate)
+year_table <- data.frame(Variable = year_labels, Attrition_Rate = attrition_rate_year$Attrition_Rate)
+pay_table <- data.frame(Variable = pay_labels, Attrition_Rate = attrition_rate_pay$Attrition_Rate)
+
+colnames(education_table) <- c("Variable", "Attrition Rate")
+colnames(city_table) <- c("Variable", "Attrition Rate")
+colnames(gender_table) <- c("Variable", "Attrition Rate")
+colnames(year_table) <- c("Variable", "Attrition Rate")
+colnames(pay_table) <- c("Variable", "Attrition Rate")
+
+combined_table <- rbind(
+  data.frame(Variable = "Education", Category = education_table$Variable, `Attrition Rate` = education_table$`Attrition Rate`),
+  data.frame(Variable = "City", Category = city_table$Variable, `Attrition Rate` = city_table$`Attrition Rate`),
+  data.frame(Variable = "Gender", Category = gender_table$Variable, `Attrition Rate` = gender_table$`Attrition Rate`),
+  data.frame(Variable = "Year", Category = year_table$Variable, `Attrition Rate` = year_table$`Attrition Rate`),
+  data.frame(Variable = "Pay", Category = pay_table$Variable, `Attrition Rate` = pay_table$`Attrition Rate`)
+)
+
+kable(combined_table, caption = "Attrition Rate Table by Attribute", align = "c") %>%
+  kable_styling()
+
+
 ```
 
 Split the data into a test and training set. I use simple random sampling methods to make a 70-30 split between my training and testing data. 

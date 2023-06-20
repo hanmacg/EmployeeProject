@@ -1,0 +1,283 @@
+---
+title: "Predicting Emmployee Attrition"
+author: "H MacGinty"
+date: "23 June 2023"
+# date: "`r Sys.Date()`"
+bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
+output:
+  pagedown::html_paged:
+    # template: wp_paged.html
+    # css: ['wp.css', 'wp-fonts.css', 'wp-page.css']
+    css: ["Template/default-fonts-Texevier.css", "Template/default-page-Texevier.css", "Template/default-Texevier.css"]
+    csl: Template/harvard-stellenbosch-university.csl # referencing format used.
+    template: ["Template/paged-Texevier.html"]
+
+    toc: true
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    self_contained: TRUE
+abstract: |
+    This paper investigates employee attributes and attrition. Random forests are used to build a model to predict employee attrition based on key attributes, such as education, pay, gender, and age, among others.
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+pacman::p_load(modelsummary, gt, knitr, kableExtra, tidyverse)
+```
+
+\newpage
+
+# Introduction {-}
+
+Losing employees can be costly for businesses. Predicting attrition and its key determinants or attributes can help estimate future employee turnover and attempt to reduce it. 
+
+<!-- The following is a code chunk. It must have its own unique name (after the r), or no name. After the comma follows commands for R which are self-explanatory. By default, the code and messages will not be printed in your pdf, just the output: -->
+
+```{r }
+employee <- read.csv("C:/Users/hanna/OneDrive/Documents/Data Science/Project/EmployeeProject/Attrition/data/Employee.csv") 
+
+library(wesanderson)
+palette <- wes_palette("GrandBudapest1", 2)
+palette2 <- wes_palette("GrandBudapest1", 1)
+
+
+
+
+
+```
+
+
+
+# Exploratory Data Analaysis {-}
+
+## Graphical analysis
+
+```{r}
+
+#spread of data across city and education
+pacman::p_load(forcats)
+
+#graphing city spread among employees
+# employee %>% 
+# mutate(City2 = forcats::fct_infreq(City)) %>% 
+# ggplot() + 
+# geom_bar(aes(x = City2), fill = palette2, alpha = 0.7) + coord_flip() + 
+# labs(x = "Count", y = "City", title = "City spread among employees", 
+#     caption = "Data from Kaggle") + theme_classic()
+
+source("code/plot_spread.R")
+spread <- plot_spread(employee, City)
+spread
+
+#graph spread of education
+# employee %>% 
+# mutate(Education2 = forcats::fct_infreq(Education)) %>% 
+# ggplot() + 
+# geom_bar(aes(x = Education2), fill = palette2, alpha = 0.7) + coord_flip() + 
+# labs(x = "Count", y = "Education", title = "Education spread among employees", 
+#     caption = "Data from Kaggle") + theme_classic()
+
+spread_ed <- plot_spread(employee, Education)
+spread_ed 
+
+#distribution
+ggplot(employee, aes(x = Age)) +
+  geom_histogram(binwidth = 2, fill = palette2, color = "black") +
+  labs(x = "Age", y = "Count")  +
+  ggtitle("Distribution of Age") + theme_classic()
+
+
+ggplot(employee, aes(x = ExperienceInCurrentDomain)) +
+  geom_histogram(binwidth = 1, fill = palette2, color = "black") +
+  labs(x = "Experience", y = "Count") +
+  ggtitle("Distribution of Experience") +theme_classic()
+
+#Attrition Rate
+ggplot(employee, aes(x = Education, fill = factor(LeaveOrNot))) +
+  geom_bar(position = "fill") + scale_fill_manual(values = palette) +
+  labs(x = "Education", y = "Attrition Rate", fill = "Attrition") +
+  ggtitle("Attrition Rates by Education") + theme_classic()
+
+ggplot(employee, aes(x = factor(JoiningYear), fill = factor(LeaveOrNot))) +
+  geom_bar(position = "fill") +
+  labs(x = "Joining Year", y = "Attrition Rate", fill = "Attrition") + scale_fill_manual(values = palette) +
+  ggtitle("Attrition Rates by Joining Year") + theme_minimal()
+
+#Looking at employee attrition against age. It seems that attrition is higher among younger individuals and lower for older individuals.
+
+smooth <- ggplot(employee, aes(x = Age, y = LeaveOrNot)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color = "red") +
+  labs(x = "Age", y = "Employee Attrition") +
+  theme_classic()
+
+smooth
+
+
+```
+
+
+<!-- $$ -->
+<!-- This is a commented out section in the writing part. -->
+<!-- Comments are created by highlighting text, amnd pressing CTL+C -->
+<!-- \\begin{align} -->
+<!-- \\beta = \\alpha^2 -->
+<!-- \end{align} -->
+<!-- $$ -->
+
+
+```{r table-1, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+library(knitr)
+library(kableExtra)
+
+#Table of attrition rate
+attrition_rate_education <- employee %>%
+  group_by(Education) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+# Calculate attrition rate by Gender
+attrition_rate_gender <- employee %>%
+  group_by(Gender) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by City
+attrition_rate_city <- employee %>%
+  group_by(City) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Joining Year
+attrition_rate_year <- employee %>%
+  group_by(JoiningYear) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Payment Tier
+attrition_rate_pay <- employee %>%
+  group_by(PaymentTier) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+education_labels <- c("Bachelors", "Masters", "PHD") 
+city_labels <- c("Bangalore", "New Delhi", "Pune") 
+gender_labels <- c("Female", "Male")  
+year_labels <- c("2012", "2013", "2014", "2015", "2016", "2017", "2018")  
+pay_labels <- c("1", "2", "3") 
+
+education_table <- data.frame(Variable = education_labels, Attrition_Rate = attrition_rate_education$Attrition_Rate)
+city_table <- data.frame(Variable = city_labels, Attrition_Rate = attrition_rate_city$Attrition_Rate)
+gender_table <- data.frame(Variable =gender_labels, Attrition_Rate = attrition_rate_gender$Attrition_Rate)
+year_table <- data.frame(Variable = year_labels, Attrition_Rate = attrition_rate_year$Attrition_Rate)
+pay_table <- data.frame(Variable = pay_labels, Attrition_Rate = attrition_rate_pay$Attrition_Rate)
+
+colnames(education_table) <- c("Variable", "Attrition Rate")
+colnames(city_table) <- c("Variable", "Attrition Rate")
+colnames(gender_table) <- c("Variable", "Attrition Rate")
+colnames(year_table) <- c("Variable", "Attrition Rate")
+colnames(pay_table) <- c("Variable", "Attrition Rate")
+
+combined_table <- rbind(
+  data.frame(Variable = "Education", Category = education_table$Variable, `Attrition Rate` = education_table$`Attrition Rate`),
+  data.frame(Variable = "City", Category = city_table$Variable, `Attrition Rate` = city_table$`Attrition Rate`),
+  data.frame(Variable = "Gender", Category = gender_table$Variable, `Attrition Rate` = gender_table$`Attrition Rate`),
+  data.frame(Variable = "Year", Category = year_table$Variable, `Attrition Rate` = year_table$`Attrition Rate`),
+  data.frame(Variable = "Pay", Category = pay_table$Variable, `Attrition Rate` = pay_table$`Attrition Rate`)
+)
+
+
+table <- kable(combined_table, row.names = TRUE,
+      caption = 'Attrition Rate Table by Attribute',
+      format = "html", booktabs = T) %>%
+        kable_styling(full_width = T,
+                      latex_options = c("striped",
+                                        "scale_down",
+                                        "HOLD_position"),
+                      font_size = 13)
+table
+```
+
+# Pre-processing {-}
+## Feature and Target Engineering {-}
+
+Since my predictor variable (Leave or Not) is binary, there is no need for target engineering.
+
+Regarding feature engineering, most of the features are categorical. Gender and whether a person benched or not (removed themselves from projects in the lst month) are transformed into dummies. 
+
+Education is label encoded as it can be ordered (Bachelors being the lowest level of education, Master's one higher and PHD being the highest level of education). Payment Tier and experience in the current domain (and joining year?) were already label encoded and thus do not require further engineering. 
+
+Since age is numeric and random forests are able to handle both numeric and categorical variables, it is not altered.
+
+```{r}
+#create a binary variable for gender - female is 0 and male is 1
+employee <- employee %>%
+  mutate(male = ifelse(Gender == "Female", 0, 1))
+
+#create a binary variable for ever-benched - i.e., they kept out of projects for a month or more
+employee <- employee %>%
+  mutate(benched = ifelse(EverBenched == "No", 0, 1))
+
+#One hot encoding
+employee <- employee %>%
+  mutate(bangalore = ifelse(City == "Bangalore", 1, 0)) %>% 
+    mutate(pune = ifelse(City == "Pune", 1, 0)) %>% 
+    mutate(new_delhi = ifelse(City == "New Delhi", 1, 0))
+
+#lable encode education category where Bachelors =1, Master's =2 and PhD = 3
+employee <- employee %>%
+  mutate(education = case_when(
+    Education == "Bachelors" ~ 1,
+    Education == "Masters" ~ 2,
+    Education == "PHD" ~ 3
+  ))
+
+#one-hot encode joining year
+data <- data.frame(JoiningYear = c("2014", "2015", "2016", "2017", "2018"))
+
+employee <- employee %>%
+  mutate(Y2014 = ifelse(JoiningYear == "2014", 1, 0)) %>% 
+    mutate(Y2015 = ifelse(JoiningYear == "2015", 1, 0)) %>% 
+    mutate(Y2016 = ifelse(JoiningYear == "2016", 1, 0)) %>% 
+    mutate(Y2017 = ifelse(JoiningYear == "2017", 1, 0)) %>% 
+     mutate(Y2018 = ifelse(JoiningYear == "2018", 1, 0))
+
+
+
+```
+
+
+# Bias-Variance Trade-off {-}
+
+It is also important to consider the bias-variance trade-off. Prediction errors are generally a result of either bias or variance. In general, decreasing bias will almost always lead to greater variance. Bias is the difference between the expected prediction and the correct value (linear models have high levels of bias).
+
+Variance error is the variability of a model prediction for a given data point. Some models can potentially overfit the training data, resulting in accurate results against the training data but typically poor results against the test data. In other words, the model does not generalise well.
+
+We can adjust the model hyperparameters to achieve the best mix of bias and variance. 
+
+
+
+
+
+
+\newpage
+
+# MLR {-}
+
+
+
+# Random Forests {-}
+
+
+
+
+# References {-}
+
+<div id="refs"></div>
+
+
+# Appendix {-}
+
+## Appendix A {-}
+
+Some appendix information here
+
+
+
+
+
