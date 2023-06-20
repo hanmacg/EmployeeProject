@@ -50,10 +50,14 @@ palette2 <- wes_palette("GrandBudapest1", 1)
 
 # Exploratory Data Analaysis {-}
 
+The dataset contains information on 4653 employees and whether they attrited or not. The employee attributes available include demographic information such as age and gender. Employees are based in one of three major cities in India, namely Bangalore, Pune and New Delhi. The year an employee joined a company (Joining Year), ranging from 2014 to 2018, is also considered. 
+
+Given that earnings are generally an important determinant in whether an employee leaves their job, their payment tier, scaled from 1, being the highest, and 3, being the lowest, is included in the data. Additionally, years of experience in their current field is included as well as their highest level of education (Bachelor's, Master's, PhD). There is also information on whether an employee kept out of projects for 1 month or more, which could potentially indicates an employee's lack of interest in work or plans to leave the company. 
+
+
 ## Graphical analysis
 
 ```{r}
-
 #spread of data across city and education
 pacman::p_load(forcats)
 
@@ -78,8 +82,15 @@ spread
 #     caption = "Data from Kaggle") + theme_classic()
 
 spread_ed <- plot_spread(employee, Education)
-spread_ed 
+spread_ed
+phd_count <- sum(employee$ExperienceInCurrentDomain == "7")
+```
 
+Spreading the data among city, most of the employees are from Bangalore. Additionally, most employees have a Bachelors degree. Only 179 employees have a PHD and 873 have Master's degrees. Looking at age, which ranges between 22 and 41, the majority of employees are in their mid to late twenties, skewing the distribution to right.  
+
+Regarding experience, very few individuals have 6 or 7 years experience (only 16 employees in total) in their current field of work, most likely due to the young employee base. Most commonly, individuals have 2 years experience. 
+
+```{r}
 #distribution
 ggplot(employee, aes(x = Age)) +
   geom_histogram(binwidth = 2, fill = palette2, color = "black") +
@@ -91,7 +102,11 @@ ggplot(employee, aes(x = ExperienceInCurrentDomain)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Experience", y = "Count") +
   ggtitle("Distribution of Experience") +theme_classic()
+```
 
+When examining the frequency of attrition, 
+
+```{r}
 #Attrition Rate
 ggplot(employee, aes(x = Education, fill = factor(LeaveOrNot))) +
   geom_bar(position = "fill") + scale_fill_manual(values = palette) +
@@ -257,14 +272,444 @@ We can adjust the model hyperparameters to achieve the best mix of bias and vari
 
 \newpage
 
-# MLR {-}
+# Multiple Logistic Regression {-}
+```{r table-2, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+library(caret)
+library(vip)
+library(rsample)
+library(rpart)
+library(rpart.plot)
+library(broom)
+library(vip)
+
+employeedata <- subset(employee, select = c(LeaveOrNot, Age, male, benched, ExperienceInCurrentDomain, bangalore, pune, new_delhi, education, Y2014, Y2015, Y2016, Y2017, Y2018, PaymentTier))
+# 
+# 
+# 
+df <- employeedata %>% mutate_if(is.ordered, factor, ordered = FALSE)
+df$LeaveOrNot <- factor(df$LeaveOrNot, levels = c(0, 1))
+df$male <- factor(df$male, levels = c(0, 1))
+df$benched <- factor(df$benched, levels = c(0, 1))
+df$bangalore <- factor(df$bangalore, levels = c(0, 1))
+df$pune <- factor(df$pune, levels = c(0, 1))
+df$new_delhi <- factor(df$new_delhi, levels = c(0, 1))
+# 
+set.seed(123)  # for reproducibility
+churn_split <- initial_split(df, prop = .7)
+churn_train <- training(churn_split)
+churn_test  <- testing(churn_split)
+
+# 
+#Let's make various models for comparison
+set.seed(123)
+cv_model1 <- train(
+  LeaveOrNot ~ education,
+  data = churn_train,
+  method = "glm",
+  family = "binomial",
+  trControl = trainControl(method = "cv", number = 10)
+)
+
+# 
+set.seed(123)
+cv_model2 <- train(
+  LeaveOrNot ~ education + PaymentTier,
+  data = churn_train,
+  method = "glm",
+  family = "binomial",
+  trControl = trainControl(method = "cv", number = 10)
+)
+
+
+set.seed(123)
+cv_model3 <- train(
+  LeaveOrNot ~ Age + male + benched + ExperienceInCurrentDomain + bangalore + pune + education + PaymentTier + Y2014 + Y2015 + Y2016 + Y2017,
+  data = churn_train,
+  method = "glm",
+  family = "binomial",
+  trControl = trainControl(method = "cv", number = 10)
+)
+
+s <- summary(
+  resamples(
+    list(
+      model1 = cv_model1,
+      model2 = cv_model2,
+      model3 = cv_model3
+    )
+  )
+)$statistics$Accuracy
+
+table_logistic <-  kable(s, row.names = TRUE,
+      caption = 'Model Accuracy in Logistic Regressions',
+      format = "html", booktabs = T) %>%
+        kable_styling(full_width = T,
+                      latex_options = c("striped",
+                                        "scale_down",
+                                        "HOLD_position"),
+                      font_size = 13)
+table_logistic
+# 
+# 
+# pred_class <- predict(cv_model3, churn_train)
+# 
+# #create confusion matrix
+# confusionMatrix(
+#   data = relevel(pred_class, ref = "1"),
+#   reference = relevel(churn_train$LeaveOrNot, ref = "1")
+# )
+
+#top influential variables
+vip(cv_model3, num_features = 24)
+```
+
+
+```{r table-3, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+# 
+library(ROCR)
+
+# # Compute predicted probabilities
+# m1_prob <- predict(cv_model1, churn_train, type = "prob")$"1"
+# m3_prob <- predict(cv_model3, churn_train, type = "prob")$"1"
+# #
+# # Compute AUC metrics for cv_model1 and cv_model3
+# perf1 <- prediction(m1_prob, churn_train$LeaveOrNot) %>%
+#   performance(measure = "tpr", x.measure = "fpr")
+# perf2 <- prediction(m3_prob, churn_train$LeaveOrNot) %>%
+#   performance(measure = "tpr", x.measure = "fpr")
+# 
+# # Plot ROC curves for cv_model1 and cv_model3
+# plot(perf1, col = "black", lty = 2)
+# plot(perf2, add = TRUE, col = "blue")
+# legend(0.6, 0.3, legend = c("cv_model1", "cv_model3"),
+#        col = c("black", "blue"), lty = 2:1, cex = 0.6)
+
+# #above is the ROC curve
+# 
+# #the below looks at PLS - but this may be inappropriate for data I have
+# # set.seed(123)
+# # cv_model_pls <- train(
+# #   LeaveOrNot ~ .,
+# #   data = churn_train,
+# #   method = "pls",
+# #   family = "binomial",
+# #   trControl = trainControl(method = "cv", number = 10),
+# #   preProcess = c("zv", "center", "scale"),
+# #   tuneLength = 10
+# # )
+# # 
+# # cv_model_pls$bestTune
+# # 
+# # cv_model_pls$results %>%
+# #   dplyr::filter(ncomp == pull(cv_model_pls$bestTune))
+# # 
+# # ggplot(cv_model_pls)
+# 
+# class(employee$male)
+# 
+# #results from logistic regression
+model3 <- glm(
+  LeaveOrNot ~ Age + male + benched + ExperienceInCurrentDomain + bangalore + pune + education + PaymentTier + Y2014 + Y2015 + Y2016 + Y2017,
+  family = "binomial",
+  data = churn_train
+  )
+
+# coefficients <- coef(model3)
+# std_errors <- summary(model3)$coefficients[, "Std. Error"]
+# p_values <- summary(model3)$coefficients[, "Pr(>|z|)"]
+
+# Combine coefficients, standard errors, and p-values into a data frame
+# results_df <- data.frame(Coefficient = coefficients, "Std. Error" = std_errors, "p-value" = p_values)
+# 
+# # Format the data frame as a table
+# results_table <- knitr::kable(results_df, caption = "Regression Results", align = "c")
+# 
+# # Display the results table
+# results_table
+
+# logsitic_results <- kable(results_df, row.names = TRUE,
+#       caption = 'Model Accuracy in Logistic Regressions',
+#       format = "html", booktabs = T) %>%
+#         kable_styling(full_width = T,
+#                       latex_options = c("striped",
+#                                         "scale_down",
+#                                         "HOLD_position"),
+#                       font_size = 13)
+# 
+# logsitic_results
+
+# # Get the model summary
+# summary_table <- summary(model3)
+# # 
+# 
+# sum(is.na(coefficients))
+# sum(is.na(std_errors))
+# sum(is.na(p_values))
+# 
+# regression_table <- tbl_regression(model3)
+# 
+# # Display the summary table
+# regression_table
+
+# # Extract coefficients and standard errors
+# coefficients <- coef(model3)
+# std_errors <- summary(model3)$coefficients[, "Std. Error"]
+# p_values <- summary(model3)$coefficients[, "Pr(>|z|)"]
+# 
+# # Combine coefficients, standard errors, and p-values into a data frame
+# results_df <- data.frame(Coefficient = coefficients, "Std. Error" = std_errors, "p-value" = p_values)
+# 
+# # Format the data frame as a table
+# results_table <- knitr::kable(results_df, caption = "Regression Results", align = "c")
+# 
+# # Display the results table
+# results_table
+
+
+# t <- tidy(model3)
+# 
+# logsitic_results <- kable(t, row.names = TRUE,
+#       caption = 'Model Accuracy in Logistic Regressions',
+#       format = "html", booktabs = T) %>%
+#         kable_styling(full_width = T,
+#                       latex_options = c("striped",
+#                                         "scale_down",
+#                                         "HOLD_position"),
+#                       font_size = 13)
+# 
+# logsitic_results
+
+```
 
 
 
 # Random Forests {-}
 
+## Decision tree {-}
+
+```{r}
+
+#first decision tree
+split <- rsample::initial_split(employeedata, prop = 0.7, strata = "LeaveOrNot")
+emp_train <- rsample::training(split)
+
+# Convert the "LeaveOrNot" variable to a factor in the training set
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+
+emp_dt1 <- rpart(
+  formula = LeaveOrNot ~ .,
+  data = emp_train,
+  method = "class"
+)
+
+rpart.plot(emp_dt1)
+
+emp_test <- rsample::testing(split)
+
+# Make predictions on the test set
+predictions <- predict(emp_dt1, newdata = emp_test, type = "class")
+
+actual_labels <- emp_test$LeaveOrNot
+
+# Calculate the accuracy
+accuracy <- sum(predictions == actual_labels) / length(actual_labels) * 100
 
 
+# Print the accuracy
+cat("Accuracy:", accuracy, "%\n")
+
+##pruning - before pruning, variance is high and bias is low
+
+cv_emp_dt1 <- prune(emp_dt1, cp = emp_dt1$cptable[which.min(emp_dt1$cptable[,"xerror"]),"CP"])
+#
+plotcp(emp_dt1)
+#
+rpart.plot(cv_emp_dt1)
+#text(cv_emp_dt1)
+#
+cv_emp_dt1
+
+
+```
+
+
+The issue with bagging is that the trees in bagging are not independent (tree correlation). Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. Number of trees should be 10 times number of feautures, as a rule of thumb. 
+
+```{r}
+library(ranger)
+#number of features
+n_features <- length(setdiff(names(emp_train), "LeaveOrNot"))
+
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+
+emp_rf1 <- ranger(
+  LeaveOrNot ~ .,
+  data = emp_train,
+  mtry = floor(sqrt(n_features)),
+  respect.unordered.factors = "order",
+  seed = 123)
+
+(default_rmse <- sqrt(emp_rf1$prediction.error))
+
+#prediction
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+predictions <- predict(emp_rf1, data = emp_test)
+#predictions
+predicted_labels <- predictions$predictions
+#predicted_labels
+
+#accuracy
+actual_labels <- emp_test$LeaveOrNot
+accuracy <- sum(predictions$predictions == actual_labels) / length(actual_labels)
+accuracy
+
+#precision
+precision <- sum(predicted_labels == 1 & actual_labels == 1) / sum(predicted_labels == 1)
+precision
+
+#recall
+recall <- sum(predicted_labels == 1 & actual_labels == 1) / sum(actual_labels == 1)
+recall
+
+#f1-score
+f1_score <- 2 * (precision * recall) / (precision + recall)
+f1_score
+
+
+library(pROC)
+predicted_probs <- as.numeric(predictions$predictions)
+
+# Convert the actual labels to a numeric format (0 and 1)
+numeric_labels <- as.numeric(actual_labels) - 1
+
+# Calculate the ROC curve and AUC-ROC
+roc_obj <- roc(numeric_labels, predicted_probs)
+auc_roc <- auc(roc_obj)
+auc_roc
+```
+
+There are several hyperparamters to consider in this model: the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
+
+Node size is the most common method to control tree complexity.
+
+The first parameter I am going to adjust is the number of trees. If I have 15 variables, I will make 150 trees. The default above was 500 trees. 
+
+```{r}
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+
+emp_rf1 <- ranger(
+  LeaveOrNot ~ ., 
+  data = emp_train,
+  mtry = floor(sqrt(n_features)),
+  num.trees = 150, 
+  respect.unordered.factors = "order",
+  seed = 123)
+
+(default_rmse <- sqrt(emp_rf1$prediction.error))
+```
+
+It is possible to alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this is a classification problem.
+
+#Grid Search
+
+```{r}
+library(ranger)
+
+# Define the hyperparameter grid
+hyperparams <- list(
+  num.trees = c(100, 200, 300),  # Example values, modify as needed
+  mtry = c(floor(sqrt(n_features)), floor(n_features/3))  # Example values, modify as needed
+)
+
+# Create parameter combinations
+param_combinations <- expand.grid(hyperparams)
+
+# Split the data into training and validation sets
+set.seed(123)
+split <- rsample::initial_split(emp_train, prop = 0.7, strata = "LeaveOrNot")
+train_data <- rsample::training(split)
+validation_data <- rsample::testing(split)
+
+# Define the evaluation metric
+eval_metric <- function(true, predicted) {
+  true <- as.numeric(as.character(true))
+  predicted <- as.numeric(as.character(predicted))
+  sqrt(mean((true - predicted)^2))
+}
+
+# Perform grid search
+best_rmse <- Inf
+best_model <- NULL
+
+for (i in 1:nrow(param_combinations)) {
+  params <- param_combinations[i, ]
+  
+  # Train the random forest model
+  rf_model <- ranger(
+    LeaveOrNot ~ .,
+    data = train_data,
+    num.trees = params$num.trees,
+    mtry = params$mtry,
+    seed = 123
+  )
+  
+  # Make predictions on the validation set
+  predictions <- predict(rf_model, data = validation_data)$predictions
+  
+  # Calculate the RMSE
+  rmse <- eval_metric(validation_data$LeaveOrNot, predictions)
+  
+  # Check if this model is the best so far
+  if (rmse < best_rmse) {
+    best_rmse <- rmse
+    best_model <- rf_model
+  }
+}
+
+# Print the best model and its RMSE
+print(best_model)
+print(best_rmse)
+
+
+```
+
+Assessing variable importance gives an indication of the variance in the model. If the model relies heavily on a few features, then this indicates high variance and over-fitting.  Comparing the two graphs below, it can be seen that with impurity-based variable importance, the model heavily relies on the joining year, specifically, those who joined the company in 2018. This is most likely due to the high attrition rate seen in the exploratory data analysis. Under permutation based variable importance, there is grater emphasis on more features such as education, payment tier and gender, despite joining year being the most important predictive feature.
+
+```{r}
+# re-run model with impurity-based variable importance
+rf_impurity <- ranger(
+  formula = LeaveOrNot ~ ., 
+  data = emp_train, 
+  num.trees = 150,
+  mtry = floor(sqrt(n_features)),
+  min.node.size = 1,
+  sample.fraction = .80,
+  replace = FALSE,
+  importance = "impurity",
+  respect.unordered.factors = "order",
+  verbose = FALSE,
+  seed  = 123
+)
+
+# re-run model with permutation-based variable importance
+rf_permutation <- ranger(
+  formula = LeaveOrNot ~ ., 
+  data = emp_train, 
+  num.trees = 150,
+  mtry = floor(sqrt(n_features)),
+  min.node.size = 1,
+  sample.fraction = .80,
+  replace = FALSE,
+  importance = "permutation",
+  respect.unordered.factors = "order",
+  verbose = FALSE,
+  seed  = 123
+)
+p1 <- vip::vip(rf_impurity, num_features = 14, bar = FALSE)
+p2 <- vip::vip(rf_permutation, num_features = 14, bar = FALSE)
+
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+```
 
 # References {-}
 

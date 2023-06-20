@@ -1,7 +1,5 @@
 ---
-output:
-  md_document:
-    variant: markdown_github
+output: github_document
 ---
 
 # Purpose
@@ -92,7 +90,7 @@ ggplot(employeedat, aes(x = Age, y = LeaveOrNot)) +
 ggplot(employeedat, aes(x = Education, fill = factor(LeaveOrNot))) +
   geom_bar(position = "fill") +
   labs(x = "Education", y = "Attrition Rate", fill = "Attrition") +
-  ggtitle("Attrition Rates by Education")
+  ggtitle("Attrition Rates by Education") + theme_classic()
 
 #Plotting attrition rates by joining year
 ggplot(employeedat, aes(x = factor(JoiningYear), fill = factor(LeaveOrNot))) +
@@ -162,34 +160,6 @@ print(attrition_rate_city)
 print(attrition_rate_year)
 print(attrition_rate_pay)
 
-# # Define category labels
-# education_labels <- c("Bachelors", "Masters", "PHD")  # Update with your education categories
-# gender_labels <- c("Female", "Male")  # Update with your gender categories
-# city_labels <- c("Bangalore", "New Delhi", "Pune")  # Update with your city categories
-# year_labels <- c("2012", "2013", "2014", "2015", "2016", "2017", "2018")  # Update with your year categories
-# pay_labels <- c("1", "2", "3")  # Update with your pay categories
-# 
-# # Reshape the attrition rate tables
-# attrition_table <- bind_rows(
-#   Education = attrition_rate_education,
-#   Gender = attrition_rate_gender,
-#   City = attrition_rate_city,
-#   Year = attrition_rate_year,
-#   Pay = attrition_rate_pay
-# ) %>%
-#   rownames_to_column(var = "Category") %>%
-#   mutate(Category = case_when(
-#     Category == "Education" ~ education_labels,
-#     Category == "Gender" ~ gender_labels,
-#     Category == "City" ~ city_labels,
-#     Category == "Year" ~ year_labels,
-#     Category == "Pay" ~ pay_labels,
-#     TRUE ~ NA_character_
-#   )) %>%
-#   select(Category, Attrition_Rate)
-# 
-# kable(attrition_table, caption = "Attrition Rate Table", align = "c") %>%
-#   kable_styling()
 
 
 ##attrition rate by education
@@ -209,36 +179,6 @@ combined_table <- bind_rows(
 )
 kable(combined_table, caption = "Attrition Rate Table", align = "c") %>%
   kable_styling()
-
-
-########################
-# Term_refs_perc <- function(attrition_rate_education, Terms = c("Bachelors", "Masters", "PHD" )){
-# 
-#     Term_ref_freq <-
-#         attrition_rate_education %>%
-#         group_by(Education) 
-# 
-#     Term_ref_freq
-# 
-# }
-# 
-# Term_refs_perc2 <- function(attrition_rate_gender, Terms = c("Female", "Male" )){
-# 
-#     Term_ref_freq <-
-#         attrition_rate_gender %>%
-#         group_by(Gender) 
-# 
-#     Term_ref_freq
-# 
-# }
-# 
-# Result <- bind_rows(
-#         Term_refs_perc(attrition_rate_education, Terms = c("Bachelors", "Masters", "PHD")),
-#         Term_refs_perc2(attrition_rate_gender, Terms = c("Female", "Male"))
-#     ) 
-# 
-# Result
-
 
 education_labels <- c("Bachelors", "Masters", "PHD") 
 city_labels <- c("Bangalore", "New Delhi", "Pune") 
@@ -500,11 +440,12 @@ auc_roc
 
 ```
 
-There are several hyperparamters to consider in this model: he number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
+There are several hyperparameters to consider in this model: the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
 
 Node size is the most common method to control tree complexity.
 
-The first parameter I am going to adjust is the number of trees. If I have 15 variables, I will make 150 trees. The defualt above was 500 trees. 
+The first parameter I am going to adjust is the number of trees. If I have 15 variables, I will make 150 trees. The default above was 500 trees. 
+
 ```{r}
 n_features <- length(setdiff(names(emp_train), "LeaveOrNot"))
 
