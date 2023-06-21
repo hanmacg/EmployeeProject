@@ -83,12 +83,14 @@ spread
 
 spread_ed <- plot_spread(employee, Education)
 spread_ed
-phd_count <- sum(employee$ExperienceInCurrentDomain == "7")
+phd_count <- sum(employee$JoiningYear == "2017")
 ```
 
 Spreading the data among city, most of the employees are from Bangalore. Additionally, most employees have a Bachelors degree. Only 179 employees have a PHD and 873 have Master's degrees. Looking at age, which ranges between 22 and 41, the majority of employees are in their mid to late twenties, skewing the distribution to right.  
 
 Regarding experience, very few individuals have 6 or 7 years experience (only 16 employees in total) in their current field of work, most likely due to the young employee base. Most commonly, individuals have 2 years experience. 
+
+2017 saw the most employees join the company. There was a substantial fall in employees joining in 2018. Only 367 employees joined in 2018, compared to 1180 in 2017.
 
 ```{r}
 #distribution
@@ -102,9 +104,14 @@ ggplot(employee, aes(x = ExperienceInCurrentDomain)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Experience", y = "Count") +
   ggtitle("Distribution of Experience") +theme_classic()
+
+ggplot(employee, aes(x = JoiningYear)) +
+  geom_histogram(binwidth = 1, fill = palette2, color = "black") +
+  labs(x = "Year Joined", y = "Count") +
+  ggtitle("Distribution of Joining Year") +theme_classic()
 ```
 
-When examining the frequency of attrition, 
+Attrition rates are highest among those with Master's degrees. Nearly fifty percent of those with Master's degrees left their job. When looking across joining year, almost all the employees that joined in 2018 resigned. It is possible that some event occurred in 2018 that caused that cohort to leave within the next two years.  
 
 ```{r}
 #Attrition Rate
@@ -140,6 +147,7 @@ smooth
 <!-- \end{align} -->
 <!-- $$ -->
 
+Table 1 below shows the attrition rate for each category. Attrition rates are particularly high for individuals who joined in 2018 (98%), matching the graphical analysis. It is also high for those earning a mid-tier salary (almost 60%). This is followed by 50% of those from Pune attriting.
 
 ```{r table-1, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
 library(knitr)
@@ -213,9 +221,9 @@ table
 
 Since my predictor variable (Leave or Not) is binary, there is no need for target engineering.
 
-Regarding feature engineering, most of the features are categorical. Gender and whether a person benched or not (removed themselves from projects in the lst month) are transformed into dummies. 
+Regarding feature engineering, most of the features are categorical. Gender and whether a person benched or not (removed themselves from projects in the lst month) are transformed into dummies. Joining year is one-hot encoded, resulting in binary variables for each of the 5 joining years. 
 
-Education is label encoded as it can be ordered (Bachelors being the lowest level of education, Master's one higher and PHD being the highest level of education). Payment Tier and experience in the current domain (and joining year?) were already label encoded and thus do not require further engineering. 
+Education is label encoded as it can be ordered (Bachelors being the lowest level of education, Master's one higher and PHD being the highest level of education). Payment Tier and experience in the current domain were already label encoded and thus do not require further engineering. 
 
 Since age is numeric and random forests are able to handle both numeric and categorical variables, it is not altered.
 
@@ -363,6 +371,10 @@ table_logistic
 vip(cv_model3, num_features = 24)
 ```
 
+From the logistic regression, model accuracy ranges from 71 and 74 percent for the full model. The weakest model is model 1, which regresses attrition on education, has an accuracy rate between 61 and 65 percent.
+
+In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of imprtance, therefore the model is not overely reliant on gender and joining year. 
+
 
 ```{r table-3, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
 # 
@@ -481,11 +493,69 @@ model3 <- glm(
 
 ```
 
+# KNN
+
+looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 77.8%. 
+
+```{r}
+emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+emp_test$male <- as.character(emp_test$male)
+emp_test$benched <- as.character(emp_test$benched)
+emp_test$bangalore <- as.character(emp_test$bangalore)
+emp_test$pune <- as.character(emp_test$pune)
+emp_test$new_delhi <- as.character(emp_test$new_delhi)
+emp_test$education <- as.character(emp_test$education)
+emp_test$Y2014 <- as.character(emp_test$Y2014)
+emp_test$Y2015 <- as.character(emp_test$Y2015)
+emp_test$Y2016 <- as.character(emp_test$Y2016)
+emp_test$Y2017 <- as.character(emp_test$Y2017)
+emp_test$Y2018 <- as.character(emp_test$Y2018)
+emp_test$PaymentTier <- as.character(emp_test$PaymentTier)
+
+cv <- trainControl(
+  method = "repeatedcv", 
+  number = 10, 
+  repeats = 5
+)
+
+# Create grid of hyperparameter values
+hyper_grid <- expand.grid(k = seq(2, 25, by = 1))
+
+# Tune a knn model using grid search
+knn_fit <- train(
+  LeaveOrNot ~ ., 
+  data = emp_train, 
+  method = "knn", 
+  trControl = cv, 
+  tuneGrid = hyper_grid,
+  metric = "Accuracy"
+)
+
+knn_fit
+
+plot(knn_fit)
+
+
+#apply the model
+
+predictions <- predict(knn_fit, newdata = emp_test)
+confusionMatrix(predictions, emp_test$LeaveOrNot)
+
+
+
+
+
+```
 
 
 # Random Forests {-}
 
+Random forests are powerful out-of the box algorithms that generally have very good predictive accuracy (). The come with the benefits of decision trees and bagging but greatly reduce instability and between-tree correlation.
+
 ## Decision tree {-}
+
+Following the general rule-of-thumb, there is a 70:30 split among the training and testing data.
 
 ```{r}
 
@@ -505,6 +575,7 @@ emp_dt1 <- rpart(
 rpart.plot(emp_dt1)
 
 emp_test <- rsample::testing(split)
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
 
 # Make predictions on the test set
 predictions <- predict(emp_dt1, newdata = emp_test, type = "class")
@@ -586,18 +657,99 @@ numeric_labels <- as.numeric(actual_labels) - 1
 roc_obj <- roc(numeric_labels, predicted_probs)
 auc_roc <- auc(roc_obj)
 auc_roc
+
+
+####
+
+train_predictions <- predict(emp_rf1, data = emp_train)$predictions
+
+# Calculate training accuracy
+train_accuracy <- sum(train_predictions == emp_train$LeaveOrNot) / nrow(emp_train)
+
+# Make predictions on test set
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+test_predictions <- predict(emp_rf1, data = emp_test)$predictions
+
+# Calculate test accuracy
+test_accuracy <- sum(test_predictions == emp_test$LeaveOrNot) / nrow(emp_test)
+
+cat("Training Accuracy:", train_accuracy, "\n")
+cat("Test Accuracy:", test_accuracy, "\n")
+
+# Calculate training and test errors
+train_error <- 1 - train_accuracy
+test_error <- 1 - test_accuracy
+
+# Print the training and test errors
+cat("Training Error:", train_error, "\n")
+cat("Test Error:", test_error, "\n")
+
 ```
 
-There are several hyperparamters to consider in this model: the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, the splitting rule to use during tree construction.
+Comparing the training and testing error, the test error (15.1%) is slightly higher than the training error (11.8%). This may indicate that there is some level of overfitting, however it does not appear to be substantial. The model's performance is still reasonably good. 
+
+To continue to examine the bias-variance tradeoff, the learning curve is plotted. At small sample size, it can be seen that he test accuracy is much lower than the training dataset. The high accuracy for the training set at lower sample sizes indicates overfitting. Once the sample size reaches over 2000, the accuracy between the training and the testing set begin to converge, reducing the bias-variance tradeoff.
+
+```{r}
+# Set up sample sizes
+sample_sizes <- seq(100, nrow(emp_train), by = 100)
+
+# Initialize empty vectors for accuracy values
+train_accuracy <- numeric(length(sample_sizes))
+test_accuracy <- numeric(length(sample_sizes))
+
+# Train and evaluate models for different sample sizes
+for (i in seq_along(sample_sizes)) {
+  # Subset the training data
+  subset_train <- emp_train[1:sample_sizes[i], ]
+  
+  # Train a random forest model
+  rf_model <- ranger(
+    LeaveOrNot ~ .,
+    data = subset_train,
+    mtry = floor(sqrt(n_features)),
+    respect.unordered.factors = "order",
+    seed = 123
+  )
+  
+  # Make predictions on training data
+  train_predictions <- predict(rf_model, data = subset_train)$predictions
+  
+  # Make predictions on test data
+  test_predictions <- predict(rf_model, data = emp_test)$predictions
+  
+  # Calculate and store accuracies
+  train_accuracy[i] <- sum(train_predictions == subset_train$LeaveOrNot) / nrow(subset_train)
+  test_accuracy[i] <- sum(test_predictions == emp_test$LeaveOrNot) / nrow(emp_test)
+}
+
+# Plot the learning curve
+plot(
+  sample_sizes, train_accuracy,
+  type = "l", col = "blue",
+  xlab = "Sample Size", ylab = "Accuracy",
+  ylim = c(0, 1), main = "Learning Curve"
+)
+lines(sample_sizes, test_accuracy, type = "l", col = "red")
+legend("bottomright", legend = c("Train Accuracy", "Test Accuracy"),
+       col = c("blue", "red"), lty = 1)
+
+
+```
+
+
+There are several hyperparameters to consider in this model: the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, and the splitting rule to use during tree construction.
 
 Node size is the most common method to control tree complexity.
 
 The first parameter I am going to adjust is the number of trees. If I have 15 variables, I will make 150 trees. The default above was 500 trees. 
 
+Adjusting the number of trees down from 500 to 150 increases the accuracy of the model, but marginally. Accuracy increased from 84.81% to 84.96%. 
+
 ```{r}
 emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
 
-emp_rf1 <- ranger(
+emp_rf2 <- ranger(
   LeaveOrNot ~ ., 
   data = emp_train,
   mtry = floor(sqrt(n_features)),
@@ -605,19 +757,41 @@ emp_rf1 <- ranger(
   respect.unordered.factors = "order",
   seed = 123)
 
-(default_rmse <- sqrt(emp_rf1$prediction.error))
+(default_rmse <- sqrt(emp_rf2$prediction.error))
+
+
+#prediction
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+predictions <- predict(emp_rf2, data = emp_test)
+#predictions
+predicted_labels <- predictions$predictions
+#predicted_labels
+
+#accuracy
+actual_labels <- emp_test$LeaveOrNot
+accuracy <- sum(predictions$predictions == actual_labels) / length(actual_labels)
+accuracy
 ```
 
 It is possible to alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this is a classification problem.
 
+Node size is a common method to adjust tree complexity. 
+
+```{r}
+
+```
+
+
 #Grid Search
+
+Given that there are multiple hyperparameters and possible combinations to consider, a grid search is conducted to find the optimal model. 
 
 ```{r}
 library(ranger)
 
 # Define the hyperparameter grid
 hyperparams <- list(
-  num.trees = c(100, 200, 300),  # Example values, modify as needed
+  num.trees = c(100, 150, 300),  # Example values, modify as needed
   mtry = c(floor(sqrt(n_features)), floor(n_features/3))  # Example values, modify as needed
 )
 
@@ -673,6 +847,48 @@ print(best_rmse)
 
 ```
 
+The default sampling scheme for a random forest is one with replacement.
+
+Sample size influences how many observations are drawn for the training of each tree. Decreasing the sample size leads to more diverse trees and less between-tree correlation, which has a positive effect on predictive accuracy. Having a few features that 
+
+Having many categorical features with varying number of levels, such as experience or education in this case, or unbalanced categories, then sampling with replacement can lead to biased results. Sampling without replacement can thus lead to a less biased use of all the levels across the trees in the random forest.  
+
+```{r}
+hyper_grid <- expand.grid(
+  mtry = c(3, floor(sqrt(n_features)), 4),
+  min.node.size = c(1, 3, 5, 10), 
+  replace = c(TRUE, FALSE),                               
+  sample.fraction = c(.5, .63, .8),                       
+  rmse = NA                                               
+)
+
+# execute full cartesian grid search
+for(i in seq_len(nrow(hyper_grid))) {
+  # fit model for ith hyperparameter combination
+  fit <- ranger(
+    formula         = LeaveOrNot ~ ., 
+    data            = emp_train, 
+    num.trees       = n_features * 10,
+    mtry            = hyper_grid$mtry[i],
+    min.node.size   = hyper_grid$min.node.size[i],
+    replace         = hyper_grid$replace[i],
+    sample.fraction = hyper_grid$sample.fraction[i],
+    verbose         = FALSE,
+    seed            = 123,
+    respect.unordered.factors = 'order',
+  )
+  # export OOB error 
+  hyper_grid$rmse[i] <- sqrt(fit$prediction.error)
+}
+
+# assess top 10 models
+hyper_grid %>%
+  arrange(rmse) %>%
+  mutate(perc_gain = (default_rmse - rmse) / default_rmse * 100) %>%
+  head(10)
+```
+
+
 Assessing variable importance gives an indication of the variance in the model. If the model relies heavily on a few features, then this indicates high variance and over-fitting.  Comparing the two graphs below, it can be seen that with impurity-based variable importance, the model heavily relies on the joining year, specifically, those who joined the company in 2018. This is most likely due to the high attrition rate seen in the exploratory data analysis. Under permutation based variable importance, there is grater emphasis on more features such as education, payment tier and gender, despite joining year being the most important predictive feature.
 
 ```{r}
@@ -710,6 +926,31 @@ p2 <- vip::vip(rf_permutation, num_features = 14, bar = FALSE)
 
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
+
+# Gradient Boosting
+
+```{r}
+set.seed(123)  # for reproducibility
+emp_gbm1 <- gbm(
+  formula = LeaveOrNot ~ .,
+  data = emp_train,
+  distribution = "gaussian",  # SSE loss function
+  n.trees = 5000,
+  shrinkage = 0.1,
+  interaction.depth = 3,
+  n.minobsinnode = 10,
+  cv.folds = 10
+)
+
+# find index for number trees with minimum CV error
+best <- which.min(emp_gbm1$cv.error)
+
+# get MSE and compute RMSE
+sqrt(emp_gbm1$cv.error[best])
+
+gbm.perf(emp_gbm1, method = "cv")
+```
+
 
 # References {-}
 
