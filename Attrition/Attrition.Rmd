@@ -1,5 +1,5 @@
 ---
-title: "Predicting Emmployee Attrition"
+title: "Predicting Employee Attrition"
 author: "H MacGinty"
 date: "23 June 2023"
 # date: "`r Sys.Date()`"
@@ -39,8 +39,6 @@ employee <- read.csv("C:/Users/hanna/OneDrive/Documents/Data Science/Project/Emp
 library(wesanderson)
 palette <- wes_palette("GrandBudapest1", 2)
 palette2 <- wes_palette("GrandBudapest1", 1)
-
-
 
 
 
@@ -373,28 +371,28 @@ vip(cv_model3, num_features = 24)
 
 From the logistic regression, model accuracy ranges from 71 and 74 percent for the full model. The weakest model is model 1, which regresses attrition on education, has an accuracy rate between 61 and 65 percent.
 
-In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of imprtance, therefore the model is not overely reliant on gender and joining year. 
+In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of imprtance, therefore the model is not overly reliant on gender and joining year. 
 
 
 ```{r table-3, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
 # 
 library(ROCR)
 
-# # Compute predicted probabilities
-# m1_prob <- predict(cv_model1, churn_train, type = "prob")$"1"
-# m3_prob <- predict(cv_model3, churn_train, type = "prob")$"1"
-# #
-# # Compute AUC metrics for cv_model1 and cv_model3
-# perf1 <- prediction(m1_prob, churn_train$LeaveOrNot) %>%
-#   performance(measure = "tpr", x.measure = "fpr")
-# perf2 <- prediction(m3_prob, churn_train$LeaveOrNot) %>%
-#   performance(measure = "tpr", x.measure = "fpr")
-# 
-# # Plot ROC curves for cv_model1 and cv_model3
-# plot(perf1, col = "black", lty = 2)
-# plot(perf2, add = TRUE, col = "blue")
-# legend(0.6, 0.3, legend = c("cv_model1", "cv_model3"),
-#        col = c("black", "blue"), lty = 2:1, cex = 0.6)
+# Compute predicted probabilities
+m1_prob <- predict(cv_model1, churn_train, type = "prob")$"1"
+m3_prob <- predict(cv_model3, churn_train, type = "prob")$"1"
+#
+# Compute AUC metrics for cv_model1 and cv_model3
+perf1 <- prediction(m1_prob, churn_train$LeaveOrNot) %>%
+  performance(measure = "tpr", x.measure = "fpr")
+perf2 <- prediction(m3_prob, churn_train$LeaveOrNot) %>%
+  performance(measure = "tpr", x.measure = "fpr")
+
+# Plot ROC curves for cv_model1 and cv_model3
+plot(perf1, col = "black", lty = 2)
+plot(perf2, add = TRUE, col = "blue")
+legend(0.6, 0.3, legend = c("cv_model1", "cv_model3"),
+       col = c("black", "blue"), lty = 2:1, cex = 0.6)
 
 # #above is the ROC curve
 # 
@@ -478,26 +476,35 @@ model3 <- glm(
 # results_table
 
 
-# t <- tidy(model3)
-# 
-# logsitic_results <- kable(t, row.names = TRUE,
-#       caption = 'Model Accuracy in Logistic Regressions',
-#       format = "html", booktabs = T) %>%
-#         kable_styling(full_width = T,
-#                       latex_options = c("striped",
-#                                         "scale_down",
-#                                         "HOLD_position"),
-#                       font_size = 13)
-# 
-# logsitic_results
+t <- tidy(model3)
+
+logsitic_results <- kable(t, row.names = TRUE,
+      caption = 'Model Accuracy in Logistic Regressions',
+      format = "html", booktabs = T) %>%
+        kable_styling(full_width = T,
+                      latex_options = c("striped",
+                                        "scale_down",
+                                        "HOLD_position"),
+                      font_size = 13)
+
+logsitic_results
 
 ```
 
 # KNN
 
-looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 77.8%. 
+looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search looks for the optimal level of K between 2 and 25. The model selects k =5 as the optimal value. The accuracy rate for k=5 is 78.04%. 
+
+Strangely, on the testing data, the model's accuracy is slightly higher at 79%, indicating a potential issue with the model such as data leakage.
 
 ```{r}
+
+split <- rsample::initial_split(employeedata, prop = 0.7, strata = "LeaveOrNot")
+emp_train <- rsample::training(split)
+emp_test <- rsample::testing(split)
+emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+
+# Convert the "LeaveOrNot" variable to a factor in the training set
 emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
 emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
 emp_test$male <- as.character(emp_test$male)
@@ -513,6 +520,8 @@ emp_test$Y2017 <- as.character(emp_test$Y2017)
 emp_test$Y2018 <- as.character(emp_test$Y2018)
 emp_test$PaymentTier <- as.character(emp_test$PaymentTier)
 
+
+#all characters in emp train and emp test except LeaveOrNot is a factor
 cv <- trainControl(
   method = "repeatedcv", 
   number = 10, 
@@ -537,12 +546,20 @@ knn_fit
 plot(knn_fit)
 
 
-#apply the model
+#apply the model to the testing data
 
 predictions <- predict(knn_fit, newdata = emp_test)
 confusionMatrix(predictions, emp_test$LeaveOrNot)
 
 
+#predictions
+predicted_labels_KNN <- predictions
+#predicted_labels
+
+#accuracy
+actual_labels_KNN <- emp_test$LeaveOrNot
+accuracy_KNN <- sum(predictions == actual_labels_KNN) / length(actual_labels_KNN)
+accuracy_KNN
 
 
 
@@ -560,11 +577,7 @@ Following the general rule-of-thumb, there is a 70:30 split among the training a
 ```{r}
 
 #first decision tree
-split <- rsample::initial_split(employeedata, prop = 0.7, strata = "LeaveOrNot")
-emp_train <- rsample::training(split)
 
-# Convert the "LeaveOrNot" variable to a factor in the training set
-emp_train$LeaveOrNot <- as.factor(emp_train$LeaveOrNot)
 
 emp_dt1 <- rpart(
   formula = LeaveOrNot ~ .,
@@ -574,8 +587,7 @@ emp_dt1 <- rpart(
 
 rpart.plot(emp_dt1)
 
-emp_test <- rsample::testing(split)
-emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+
 
 # Make predictions on the test set
 predictions <- predict(emp_dt1, newdata = emp_test, type = "class")
@@ -604,7 +616,7 @@ cv_emp_dt1
 ```
 
 
-The issue with bagging is that the trees in bagging are not independent (tree correlation). Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. Number of trees should be 10 times number of feautures, as a rule of thumb. 
+The issue with bagging is that the trees in bagging are not independent (tree correlation). Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. Number of trees should be 10 times number of features, as a rule of thumb. 
 
 ```{r}
 library(ranger)
@@ -686,9 +698,9 @@ cat("Test Error:", test_error, "\n")
 
 ```
 
-Comparing the training and testing error, the test error (15.1%) is slightly higher than the training error (11.8%). This may indicate that there is some level of overfitting, however it does not appear to be substantial. The model's performance is still reasonably good. 
+Comparing the training and testing error, the test error (15.1%) is slightly higher than the training error (11.8%). This may indicate that there is some level of overfitting, given that the training data performs better, however it does not appear to be substantial. The model's performance is still reasonably good. 
 
-To continue to examine the bias-variance tradeoff, the learning curve is plotted. At small sample size, it can be seen that he test accuracy is much lower than the training dataset. The high accuracy for the training set at lower sample sizes indicates overfitting. Once the sample size reaches over 2000, the accuracy between the training and the testing set begin to converge, reducing the bias-variance tradeoff.
+To continue to examine the bias-variance tradeoff, the learning curve is plotted. At small sample sizes, it can be seen that the test accuracy is much lower than the training dataset. The high accuracy for the training set at lower sample sizes indicates overfitting. Once the sample size reaches over 2000, the accuracy between the training and the testing set begin to converge, reducing the bias-variance tradeoff.
 
 ```{r}
 # Set up sample sizes
@@ -738,7 +750,7 @@ legend("bottomright", legend = c("Train Accuracy", "Test Accuracy"),
 ```
 
 
-There are several hyperparameters to consider in this model: the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, and the splitting rule to use during tree construction.
+There are several hyperparameters to consider in this model, including the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, and the splitting rule to use during tree construction.
 
 Node size is the most common method to control tree complexity.
 
@@ -771,6 +783,8 @@ predicted_labels <- predictions$predictions
 actual_labels <- emp_test$LeaveOrNot
 accuracy <- sum(predictions$predictions == actual_labels) / length(actual_labels)
 accuracy
+
+
 ```
 
 It is possible to alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this is a classification problem.
@@ -930,10 +944,32 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 # Gradient Boosting
 
 ```{r}
+
+gbmdata <- employeedata
+
+# Convert the "LeaveOrNot" variable to a factor
+gbmdata$LeaveOrNot <- factor(gbmdata$LeaveOrNot)
+gbmdata$male <- as.factor(gbmdata$male)
+gbmdata$benched <- as.factor(gbmdata$benched)
+gbmdata$bangalore <- as.factor(gbmdata$bangalore)
+gbmdata$pune <- as.factor(gbmdata$pune)
+gbmdata$new_delhi <- as.factor(gbmdata$new_delhi)
+gbmdata$education <- as.factor(gbmdata$education)
+gbmdata$Y2014 <- as.factor(gbmdata$Y2014)
+gbmdata$Y2015 <- as.factor(gbmdata$Y2015)
+gbmdata$Y2016 <- as.factor(gbmdata$Y2016)
+gbmdata$Y2017 <- as.factor(gbmdata$Y2017)
+gbmdata$Y2018 <- as.factor(gbmdata$Y2018)
+gbmdata$PaymentTier <- as.factor(gbmdata$PaymentTier)
+
+split <- rsample::initial_split(gbmdata, prop = 0.7, strata = "LeaveOrNot")
+gbm_train <- rsample::training(split)
+gbm_test <- rsample::testing(split)
+
 set.seed(123)  # for reproducibility
 emp_gbm1 <- gbm(
   formula = LeaveOrNot ~ .,
-  data = emp_train,
+  data = gbm_train,
   distribution = "gaussian",  # SSE loss function
   n.trees = 5000,
   shrinkage = 0.1,
@@ -949,6 +985,13 @@ best <- which.min(emp_gbm1$cv.error)
 sqrt(emp_gbm1$cv.error[best])
 
 gbm.perf(emp_gbm1, method = "cv")
+
+
+predictions <- factor(ifelse(predictions > 0.5, 1, 0),
+                      levels = c(0, 1))
+
+confusionMatrix(data = predictions, reference = gbm_test$LeaveOrNot)
+
 ```
 
 

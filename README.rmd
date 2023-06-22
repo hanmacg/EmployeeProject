@@ -1,5 +1,6 @@
 ---
 output: github_document
+
 ---
 
 # Purpose
@@ -21,6 +22,11 @@ employeedat <- read.csv("C:/Users/hanna/OneDrive/Documents/Economics Masters/Dat
 head(employeedat)
 tab <- employeedat %>% select(Education, Age, Gender, LeaveOrNot)
 as_tibble(tab)
+
+
+# Texevier::create_template_html(directory = "C:/Users/hanna/OneDrive/Documents/Data Science/Project/EmployeeProject/",
+#                           template_name = "Final",
+#                           build_project = T, open_project = T)
 ```
 
 Next I do some cleaning as many of the variables are characters/categorical
@@ -252,6 +258,18 @@ knn_fit
 
 ggplot(knn_fit)
 
+k_value <- 3
+
+# Train the KNN model with k=3
+knn_fit <- train(
+  LeaveOrNot ~ ., 
+  data = emp_train, 
+  method = "knn", 
+  trControl = cv, 
+  tuneGrid = data.frame(k = k_value),
+  metric = "Accuracy"
+)
+
 
 ```
 
@@ -337,7 +355,7 @@ emp_dt1
 plot(emp_dt1)
 
 emp_test <- rsample::testing(split)
-predictions
+predictions <- predict(emp_dt1, data = emp_test)
 
 actual_labels <- emp_test$LeaveOrNot
 
@@ -464,7 +482,7 @@ emp_rf1 <- ranger(
 
 We could alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this is a classification problem.
 
-I next look at adjusting the tree complexity. The hyperparameter that I use is node size. The default used above was a node size of 1. Small values for node sieze result in more complex trees which potentially capture more patterns in the data but may lead to overfitting. Increasing the node size leads to simpler trees that are less prone to overfitting but may overlook finer patterns in the data.
+I next look at adjusting the tree complexity. The hyperparameter that I use is node size. The default used above was a node size of 1. Small values for node size result in more complex trees which potentially capture more patterns in the data but may lead to overfitting. Increasing the node size leads to simpler trees that are less prone to overfitting but may overlook finer patterns in the data.
 
 ```{r}
 emp_node5 <- ranger(
