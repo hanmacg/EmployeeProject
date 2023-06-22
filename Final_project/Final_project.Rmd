@@ -324,7 +324,7 @@ s <- summary(
 library(xtable)
 data <- s %>% tibble::as_tibble()
 
-table <- xtable(data, caption = "Short Table Example \\label{tab1}")
+table <- xtable(data, caption = "Accuracy across logistic models \\label{tab1}")
   print.xtable(table,
              # tabular.environment = "longtable",
              floating = TRUE,
@@ -385,9 +385,15 @@ table_results <- xtable(t, caption = "Logistic Regression Results \\label{tab1}"
 
 # KNN  {-}
 
-looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 78.3%. 
+looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. Low values of K makes the model sensitive to noise and less generalisable while large values can lead to oversmoothing.
 
-For the testing data, the model's accuracy is slightly lower at 77%. 
+The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search uses cross-validation techniques to looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 78.3%. For the testing data, the model's accuracy is slightly lower at 77%. 
+
+Alongside the model's accuracy, the precision, recall and F1 score are also examined. Precision measures the proportion of correctly predicted positive instances, also called true positives, out of all instances predicted as positive. A high precision indicates few false positives. In this case the precision is 74%, which is relatively high.
+
+Recall, also known as the model's sensitivity, measures the proportion of correctly predicted positive instances out of all actual positives instances. In other words, it is the proportion of true positives out of both the true positives and false negatives. A higher recall indicates few false negatives. In this instance, the recall is much lower (52%). This indicates that the model has a higher false negative rate than false positive rate.
+
+The F1 score balances both the precision and recall, and provides an indication of the overall performance of the model. The F1 score for the optimal K-nearest neighbours model is 61.2%, indicating that the model is somewhat adequate.
 
 ```{r KNN,  warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure1}", fig.ext = 'png', fig.height = 3, fig.width = 6}
 
@@ -442,9 +448,26 @@ predicted_labels_KNN <- KNN_predictions
 #accuracy
 actual_labels_KNN <- KNN_emp_test$LeaveOrNot
 accuracy_KNN <- sum(KNN_predictions == actual_labels_KNN) / length(actual_labels_KNN)
-accuracy_KNN
+#accuracy_KNN
+
+#precision
+precision_KNN <- sum(predicted_labels_KNN == 1 & actual_labels_KNN == 1) / sum(predicted_labels_KNN == 1)
+#precision_KNN
+
+#recall
+recall_KNN <- sum(predicted_labels_KNN == 1 & actual_labels_KNN == 1) / sum(actual_labels_KNN == 1)
+#recall_KNN
+
+#f1-score
+f1_score_KNN <- 2 * (precision_KNN * recall_KNN) / (precision_KNN + recall_KNN)
+#f1_score_KNN
+
 
 ```
+
+KNN models are very sensitive to feature scaling. Results can easily become biased as variables with larger scales can dominate the distance to calculation.
+
+On the other hand, KNN is appropriate for small datasets such as this one. 
 
 # Random Forests {-}
 
@@ -749,6 +772,50 @@ metrics2 <- xtable(metrics_df2, caption = "Metrics for Tuned Random Forest \\lab
 
 ```
 
+```{r}
+
+train_predictionsrf2 <- predict(emp_rf2, data = emp_train)$predictions
+
+# Calculate training accuracy
+train_accuracyrf2 <- sum(train_predictionsrf2 == emp_train$LeaveOrNot) / nrow(emp_train)
+
+# Make predictions on test set
+# emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
+test_predictionsrf2 <- predict(emp_rf2, data = emp_test)$predictions
+
+# Calculate test accuracy
+test_accuracyrf2 <- sum(test_predictionsrf2 == emp_test$LeaveOrNot) / nrow(emp_test)
+
+# cat("Training Accuracy:", train_accuracy, "\n")
+# cat("Test Accuracy:", test_accuracy, "\n")
+
+# Calculate training and test errors
+train_errorrf2 <- 1 - train_accuracyrf2
+test_errorrf2 <- 1 - test_accuracyrf2
+
+# Print the training and test errors
+# cat("Training Error:", train_error, "\n")
+# cat("Test Error:", test_error, "\n")
+```
+
+```{r Table6 , results = 'asis'}
+
+accuracyrf_df <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Training Error", "Test Error"),
+                         Value = c(train_accuracyrf2, test_accuracyrf2, train_errorrf2, test_errorrf2))
+
+accurf <- xtable(accuracyrf_df, caption = "More Metrics for Tuned Random Forest \\label{tab1}")
+  print.xtable(accurf,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
+```
+
+Feature importance is considered.
 
 ```{r}
 emp_train$Experience <- emp_train$ExperienceInCurrentDomain
