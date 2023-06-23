@@ -192,7 +192,7 @@
 
 
 
-\address[Add1]{Stellenbosch University, Cape Town, South Africa}
+\address[Add1]{Stellenbosch University, South Africa}
 
 \cortext[cor]{Corresponding author: Hannah MacGinty}
 
@@ -303,7 +303,11 @@ caused that cohort to leave within the next two years.
 \includegraphics{Final_project_files/figure-latex/unnamed-chunk-8-1.pdf}
 
 The table below presents the attrition rate across education, gender,
-city, joining year, experience, and pay level.
+city, joining year, experience, and pay level. Attrition rates are
+particularly high for individuals who joined in 2018 (98\%), matching
+the graphical analysis. It is also high for those earning a mid-tier
+salary (almost 60\%). This is followed by 50\% of those from Pune
+attriting.
 
 \begin{table}[H]
 \centering
@@ -389,17 +393,27 @@ percent.
 In terms of the most important features, gender and the joining year of
 2017 are the most important predictive features. Most of the other
 variables do carry some level of importance, therefore the model is not
-overly reliant on gender and joining year.
+overly reliant on gender and joining year. This also provides an
+indication that the variance of the model is not too high. While the
+model suffers some level of bias, given that the accuracy is the model
+is approximately 74 percent, it does not suffer from high bias.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-11-1.pdf}
+\begin{table}[H]
+\centering
+\begin{tabular}{rlll}
+  \hline
+ & Reference & Prediction & Count \\ 
+  \hline
+1 & 1 & 1 &  483 \\ 
+  2 & 1 & 0 &  637 \\ 
+  3 & 0 & 1 &  204 \\ 
+  4 & 0 & 0 & 1933 \\ 
+   \hline
+\end{tabular}
+\caption{Confusion Matrix for Logistic Model \label{tab1}} 
+\end{table}
 
-\begin{verbatim}
-## [1] 0.43125
-\end{verbatim}
-
-\begin{verbatim}
-## [1] 0.5345877
-\end{verbatim}
+\includegraphics{Final_project_files/figure-latex/Table2-1.pdf}
 
 \begin{table}[H]
 \centering
@@ -414,6 +428,21 @@ overly reliant on gender and joining year.
    \hline
 \end{tabular}
 \caption{Metrics for Logistic Regression \label{tab1}} 
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Metric & Value \\ 
+  \hline
+1 & Training Accuracy & 0.74 \\ 
+  2 & Test Accuracy & 0.71 \\ 
+  3 & Training Error & 0.26 \\ 
+  4 & Test Error & 0.29 \\ 
+   \hline
+\end{tabular}
+\caption{More Metrics for Logistic Regression \label{tab1}} 
 \end{table}
 
 \begin{table}[H]
@@ -480,6 +509,51 @@ is somewhat adequate.
 
 \begin{table}[H]
 \centering
+\begin{tabular}{rlll}
+  \hline
+ & Reference & Prediction & Count \\ 
+  \hline
+1 & 1 & 1 & 250 \\ 
+  2 & 1 & 0 & 230 \\ 
+  3 & 0 & 1 &  86 \\ 
+  4 & 0 & 0 & 830 \\ 
+   \hline
+\end{tabular}
+\caption{Confusion Matrix for KNN Model \label{tab1}} 
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Metric & Value \\ 
+  \hline
+1 & Accuracy & 0.77 \\ 
+  2 & F1 Score & 0.62 \\ 
+  3 & Recall & 0.53 \\ 
+  4 & Precision & 0.74 \\ 
+   \hline
+\end{tabular}
+\caption{Metrics for KNN Model \label{tab1}} 
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Metric & Value \\ 
+  \hline
+1 & Training Accuracy & 0.84 \\ 
+  2 & Test Accuracy & 0.77 \\ 
+  3 & Training Error & 0.16 \\ 
+  4 & Test Error & 0.23 \\ 
+   \hline
+\end{tabular}
+\caption{More Metrics for KNN Model \label{tab1}} 
+\end{table}
+
+\begin{table}[H]
+\centering
 \begin{tabular}{rlr}
   \hline
  & Metric & Value \\ 
@@ -516,15 +590,10 @@ between-tree correlation.
 Following the general rule-of-thumb, there is a 70:30 split among the
 training and testing data.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-12-1.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-11-1.pdf}
 
-\#ranger - model\$confusionmatrix
-
-\begin{verbatim}
-## Accuracy: 82.80802 %
-\end{verbatim}
-
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-13-1.pdf}
+\hypertarget{baseline-random-forest}{%
+\subsection{Baseline Random Forest}\label{baseline-random-forest}}
 
 The results from the baseline random forest are presented below. Random
 Forests help to reduce tree correlation. It does so by using
@@ -540,13 +609,28 @@ given that this standard when doing a classification problem.
  & Metric & Value \\ 
   \hline
 1 & Accuracy & 0.85 \\ 
-  2 & F1 Score & 0.73 \\ 
-  3 & Recall & 0.62 \\ 
-  4 & Precision & 0.90 \\ 
-  5 & AUC ROC & 0.79 \\ 
+  2 & F1 Score & 0.75 \\ 
+  3 & Recall & 0.64 \\ 
+  4 & Precision & 0.91 \\ 
+  5 & AUC ROC & 0.80 \\ 
    \hline
 \end{tabular}
 \caption{Metrics for Baseline Random Forest \label{tab1}} 
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlll}
+  \hline
+ & Reference & Prediction & Count \\ 
+  \hline
+1 & 1 & 1 & 308 \\ 
+  2 & 1 & 0 & 172 \\ 
+  3 & 0 & 1 &  23 \\ 
+  4 & 0 & 0 & 893 \\ 
+   \hline
+\end{tabular}
+\caption{Confusion Matrix for Baseline Random Forest \label{tab1}} 
 \end{table}
 
 Comparing the training and testing error, the test error (15.1\%) is
@@ -569,9 +653,9 @@ begin to converge, reducing the bias-variance tradeoff.
  & Metric & Value \\ 
   \hline
 1 & Training Accuracy & 0.88 \\ 
-  2 & Test Accuracy & 0.84 \\ 
+  2 & Test Accuracy & 0.85 \\ 
   3 & Training Error & 0.12 \\ 
-  4 & Test Error & 0.16 \\ 
+  4 & Test Error & 0.15 \\ 
    \hline
 \end{tabular}
 \caption{More Metrics for Baseline Random Forest \label{tab1}} 
@@ -609,13 +693,35 @@ the trees in the random forest.
 I included the number of trees in the search. As a rule of thumb, the
 number of trees is 100, 150 and 250 were selected as possibilities.
 
+To select the best model, the grid search finds the out-of-bag error for
+each possible model. The model with the lowest RMSE is chosen as the
+best model. Comappring the RMSE of the baseline model to the tuned model
+the tuned model is a 1.9 percent improvement over the baseline model.
+Although this increase is small, the greater accuracy in predicting
+employee attrition, the better.
+
 The best model selected is one with m(try) set to 4, a number of trees
 as 250, a node size of 1, sample without replacement, and a sample
 fraction of 0.63.
 
 \begin{verbatim}
-## [1] 0.3741739
+## [1] 0.3838944
 \end{verbatim}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlll}
+  \hline
+ & Reference & Prediction & Count \\ 
+  \hline
+1 & 1 & 1 & 318 \\ 
+  2 & 1 & 0 & 162 \\ 
+  3 & 0 & 1 &  30 \\ 
+  4 & 0 & 0 & 886 \\ 
+   \hline
+\end{tabular}
+\caption{Confusion Matrix for Tuned Random Forest \label{tab1}} 
+\end{table}
 
 \begin{table}[H]
 \centering
@@ -623,15 +729,34 @@ fraction of 0.63.
   \hline
  & Metric & Value \\ 
   \hline
-1 & Accuracy & 0.85 \\ 
-  2 & F1 Score & 0.75 \\ 
-  3 & Recall & 0.66 \\ 
+1 & Accuracy & 0.86 \\ 
+  2 & F1 Score & 0.76 \\ 
+  3 & Recall & 0.67 \\ 
   4 & Precision & 0.88 \\ 
-  5 & AUC ROC & 0.79 \\ 
+  5 & AUC ROC & 0.80 \\ 
    \hline
 \end{tabular}
 \caption{Metrics for Tuned Random Forest \label{tab1}} 
 \end{table}
+
+\hypertarget{bias-variance-trade-off}{%
+\subsection*{Bias-Variance Trade-off}\label{bias-variance-trade-off}}
+\addcontentsline{toc}{subsection}{Bias-Variance Trade-off}
+
+It is also important to consider the bias-variance trade-off. Prediction
+errors are generally a result of either bias or variance. In general,
+decreasing bias will almost always lead to greater variance. Bias is the
+difference between the expected prediction and the correct value (linear
+models have high levels of bias).
+
+Variance error is the variability of a model prediction for a given data
+point. Some models can potentially overfit the training data, resulting
+in accurate results against the training data but typically poor results
+against the test data. In other words, the model does not generalise
+well.
+
+We can adjust the model hyperparameters to achieve the best mix of bias
+and variance.
 
 \begin{table}[H]
 \centering
@@ -640,17 +765,32 @@ fraction of 0.63.
  & Metric & Value \\ 
   \hline
 1 & Training Accuracy & 0.89 \\ 
-  2 & Test Accuracy & 0.85 \\ 
+  2 & Test Accuracy & 0.86 \\ 
   3 & Training Error & 0.11 \\ 
-  4 & Test Error & 0.15 \\ 
+  4 & Test Error & 0.14 \\ 
    \hline
 \end{tabular}
 \caption{More Metrics for Tuned Random Forest \label{tab1}} 
 \end{table}
 
-Feature importance is considered.
+Assessing variable importance gives an indication of the variance in the
+model. If the model relies heavily on a few features, then this
+indicates high variance and over-fitting. Comparing the two graphs
+below, it can be seen that with impurity-based variable importance, the
+model heavily relies on the joining year, specifically, those who joined
+the company in 2018. This is most likely due to the high attrition rate
+seen in the exploratory data analysis. Under permutation-based variable
+importance, there is grater emphasis on more features such as education,
+payment tier and gender, despite joining year being the most important
+predictive feature.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-18-1.pdf}
+Comparing the graphs below to the variable importance plot for the
+logistic regression, the random forest model appears to suffer from
+higher variance due to its heavier reliance on certain features. This
+shows a clear example of the bias-variance trade-off, given the improved
+accuracy of the random forrest model compared to the logistic model.
+
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-17-1.pdf}
 
 \hfill
 
@@ -663,6 +803,8 @@ accuracy levels are assessed.
 The best model in predicting is the random forest model after
 hyperparameter tuning. This model achieves an accuracy rate of 86
 percent.
+
+When assessing the bias-variance tradeoff\ldots{}
 
 To cite this package, simply type citation(``Texevier'') in Rstudio to
 get the citation for Katzke (\protect\hyperlink{ref-Texevier}{2017})

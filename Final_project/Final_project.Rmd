@@ -26,7 +26,7 @@ Thesis_FP: FALSE
 # Comment: ----- Follow this pattern for up to 5 authors
 AddTitle: TRUE # Use FALSE when submitting to peer reviewed platform. This will remove author names.
 Author1: "Hannah MacGinty"  # First Author - note the thanks message displayed as an italic footnote of first page.
-Ref1: "Stellenbosch University, Cape Town, South Africa" # First Author's Affiliation
+Ref1: "Stellenbosch University, South Africa" # First Author's Affiliation
 Email1: "21082022\\@sun.ac.za" # First Author's Email address
 
 # Author2: "John Smith"
@@ -210,9 +210,9 @@ year_att_plot <- ggplot(employee, aes(x = factor(JoiningYear), fill = factor(Lea
 year_att_plot
 ```
 
-The table below presents the attrition rate across education, gender, city, joining year, experience, and pay level. 
+The table below presents the attrition rate across education, gender, city, joining year, experience, and pay level. Attrition rates are particularly high for individuals who joined in 2018 (98%), matching the graphical analysis. It is also high for those earning a mid-tier salary (almost 60%). This is followed by 50% of those from Pune attriting.
 
-```{r ShortTableds, results = 'asis'}
+```{r ShortTable, results = 'asis'}
 
 library(xtable)
 
@@ -405,7 +405,7 @@ s <- summary(
 
 ```
 
-```{r ShortTable, results = 'asis'}
+```{r Table1, results = 'asis'}
 
 
 data <- s %>% tibble::as_tibble()
@@ -424,9 +424,9 @@ table <- xtable(data, caption = "Accuracy across logistic models \\label{tab1}")
 
 From the logistic regression, model accuracy ranges from 70 and 76 percent for the full model. The weakest model is model 1, which regresses attrition on education, has an accuracy rate between 63 and 66 percent.
 
-In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of importance, therefore the model is not overly reliant on gender and joining year.
+In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of importance, therefore the model is not overly reliant on gender and joining year. This also provides an indication that the variance of the model is not too high. While the model suffers some level of bias, given that the accuracy is the model is approximately 74 percent, it does not suffer from high bias.
 
-```{r}
+```{r Table2, results = 'asis'}
 pred_class <- predict(cv_model3, churn_train)
 
 #create confusion matrix
@@ -435,8 +435,32 @@ pred_class <- predict(cv_model3, churn_train)
 #   reference = relevel(churn_train$LeaveOrNot, ref = "1")
 # )
 
+confusion_matrix_l <- tibble(
+  Reference = c(1, 1, 0, 0),
+  Prediction = c(1, 0, 1, 0),
+  Count = c(483, 637, 204, 1933)
+)
+
+confusion_matrix_l$Count <- format(confusion_matrix_l$Count, nsmall = 0)
+confusion_matrix_l$Reference <- format(confusion_matrix_l$Reference, nsmall =0)
+confusion_matrix_l$Prediction <- format(confusion_matrix_l$Prediction, nsmall =0)
+
+lconf <- xtable(confusion_matrix_l, caption = "Confusion Matrix for Logistic Model \\label{tab1}")
+  print.xtable(lconf,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
 important_f <- vip(cv_model3, num_features = 14)
 important_f
+```
+
+
+```{r Table3, results = 'asis'}
 
 #calculate metrics from the confusion metrics for comparison with other algorithms
 accuracy_logistic <- 0.7418
@@ -451,11 +475,6 @@ f1_score_l <- 2*(precision_l*recall_l)/(precision_l + recall_l)
 metrics_log <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision"),
                          Value = c(accuracy_logistic, f1_score_l, recall_l, precision_l))
 
-
-```
- 
-```{r Table3 , results = 'asis'}
-
 metrics_l <- xtable(metrics_log, caption = "Metrics for Logistic Regression \\label{tab1}")
   print.xtable(metrics_l,
              # tabular.environment = "longtable",
@@ -468,8 +487,45 @@ metrics_l <- xtable(metrics_log, caption = "Metrics for Logistic Regression \\la
 
 ```
  
+```{r Table4, results = 'asis'}
 
-```{r Table4 , results = 'asis'}
+train_predictions_l <- predict(cv_model3, newdata = churn_train)
+test_predictions_l <- predict(cv_model3, newdata = churn_test)
+
+# Calculate training accuracy and error
+train_actual_labels_l <- churn_train$LeaveOrNot
+train_accuracy_l <- sum(train_predictions_l == train_actual_labels_l) / length(train_actual_labels_l)
+train_error_l <- 1 - train_accuracy_l
+
+# Calculate testing accuracy and error
+test_actual_labels_l <- churn_test$LeaveOrNot
+test_accuracy_l <- sum(test_predictions_l == test_actual_labels_l) / length(test_actual_labels_l)
+test_error_l <- 1 - test_accuracy_l
+
+# Print the results
+# cat("Training Accuracy:", train_accuracy_l, "\n")
+# cat("Training Error:", train_error_l, "\n")
+# cat("Testing Accuracy:", test_accuracy_l, "\n")
+# cat("Testing Error:", test_error_l, "\n")
+
+accuracy_log <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Training Error", "Test Error"),
+                         Value = c(train_accuracy_l, test_accuracy_l, train_error_l, test_error_l))
+
+table_logistic <- xtable(accuracy_log, caption = "More Metrics for Logistic Regression \\label{tab1}")
+  print.xtable(table_logistic,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
+
+```
+
+
+```{r Table5 , results = 'asis'}
 
 
 library(broom)
@@ -513,8 +569,22 @@ The F1 score balances both the precision and recall, and provides an indication 
 
 ```{r KNN,  warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure1}", fig.ext = 'png', fig.height = 3, fig.width = 6}
 
+knndf <- df
+knndf$education <- factor(knndf$education, levels = c(1, 2, 3))
+knndf$PaymentTier <- factor(knndf$PaymentTier, levels = c(1, 2, 3))
+knndf$Y2014 <- factor(knndf$Y2014, levels = c(0, 1))
+knndf$Y2015 <- factor(knndf$Y2015, levels = c(0, 1))
+knndf$Y2016 <- factor(knndf$Y2016, levels = c(0, 1))
+knndf$Y2017 <- factor(knndf$Y2017, levels = c(0, 1))
+knndf$Y2018 <- factor(knndf$Y2018, levels = c(0, 1))
 
-split <- rsample::initial_split(df, prop = 0.7, strata = "LeaveOrNot")
+knndf_recipe <- recipe(LeaveOrNot ~., data = knndf) %>% 
+  step_center(all_numeric(), -all_outcomes()) %>%
+  step_scale(all_numeric(), -all_outcomes())
+knndf_prepared <- prep(knndf_recipe) %>%
+  bake(new_data = NULL)
+
+split <- rsample::initial_split(knndf_prepared, prop = 0.7, strata = "LeaveOrNot")
 KNN_emp_train <- rsample::training(split)
 KNN_emp_test <- rsample::testing(split)
 
@@ -530,10 +600,10 @@ cv <- trainControl(
 
 # Tune a knn model using grid search
 # knn_fit <- train(
-#   LeaveOrNot ~ ., 
-#   data = KNN_emp_train, 
-#   method = "knn", 
-#   trControl = cv, 
+#   LeaveOrNot ~ .,
+#   data = KNN_emp_train,
+#   method = "knn",
+#   trControl = cv,
 #   tuneGrid = hyper_grid,
 #   metric = "Accuracy"
 # )
@@ -545,18 +615,42 @@ knn_fit <- train(
   trControl = cv, 
   tuneLength = 1,  # Use tuneLength = 1 to avoid running grid search
   metric = "Accuracy",
-  tuneGrid = data.frame(k = 3)  # Set k = 3 directly
+  tuneGrid = data.frame(k = 6)  # Set k = 3 directly
 )
 
 # knn_fit
 # 
 # plot(knn_fit)
+```
 
+
+```{r Table6, results = 'asis'}
 
 KNN_predictions <- predict(knn_fit, newdata = KNN_emp_test)
-# confusionMatrix(KNN_predictions, KNN_emp_test$LeaveOrNot)
+#confusionMatrix(KNN_predictions, KNN_emp_test$LeaveOrNot)
+
+confusion_matrix_KNN <- tibble(
+  Reference = c(1, 1, 0, 0),
+  Prediction = c(1, 0, 1, 0),
+  Count = c(281, 46, 199, 870)
+)
+confusion_matrix_KNN$Count <- format(confusion_matrix_KNN$Count, nsmall = 0)
+confusion_matrix_KNN$Reference <- format(confusion_matrix_KNN$Reference, nsmall =0)
+confusion_matrix_KNN$Prediction <- format(confusion_matrix_KNN$Prediction, nsmall =0)
+
+confKNN <- xtable(confusion_matrix_KNN, caption = "Confusion Matrix for KNN Model \\label{tab1}")
+  print.xtable(confKNN,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+```
 
 
+```{r Table7, results = 'asis'}
 #predictions
 predicted_labels_KNN <- KNN_predictions
 #predicted_labels
@@ -578,16 +672,12 @@ recall_KNN <- sum(predicted_labels_KNN == 1 & actual_labels_KNN == 1) / sum(actu
 f1_score_KNN <- 2 * (precision_KNN * recall_KNN) / (precision_KNN + recall_KNN)
 #f1_score_KNN
 
-
 metrics_knn <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision"),
                          Value = c(accuracy_KNN, f1_score_KNN, recall_KNN, precision_KNN))
 
-```
 
-```{r Table5 , results = 'asis'}
-
-metrics_k <- xtable(metrics_knn, caption = "Metrics for KNN \\label{tab1}")
-  print.xtable(metrics_k,
+kmetrics <- xtable(metrics_knn, caption = "Metrics for KNN Model \\label{tab1}")
+  print.xtable(kmetrics,
              # tabular.environment = "longtable",
              floating = TRUE,
              table.placement = 'H',
@@ -596,8 +686,42 @@ metrics_k <- xtable(metrics_knn, caption = "Metrics for KNN \\label{tab1}")
              caption.placement = 'bottom'
              )
 
-
 ```
+
+
+```{r Table8, results = 'asis'}
+
+train_predictions_KNN <- predict(knn_fit, newdata = KNN_emp_train)
+train_actual_labels_KNN <- KNN_emp_train$LeaveOrNot
+train_accuracy_KNN <- sum(train_predictions_KNN == train_actual_labels_KNN) / length(train_actual_labels_KNN)
+train_error_KNN <- 1 - train_accuracy_KNN
+
+# Calculate testing accuracy and error
+test_predictions_KNN <- KNN_predictions
+test_actual_labels_KNN <- KNN_emp_test$LeaveOrNot
+test_accuracy_KNN <- sum(test_predictions_KNN == test_actual_labels_KNN) / length(test_actual_labels_KNN)
+test_error_KNN <- 1 - test_accuracy_KNN
+
+# Print the results
+# cat("Training Accuracy:", train_accuracy_KNN, "\n")
+# cat("Training Error:", train_error_KNN, "\n")
+# cat("Testing Accuracy:", test_accuracy_KNN, "\n")
+# cat("Testing Error:", test_error_KNN, "\n")
+
+accuracy_KNN <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Training Error", "Test Error"),
+                         Value = c(train_accuracy_KNN, test_accuracy_KNN, train_error_KNN, test_error_KNN))
+
+accuKNN <- xtable(accuracy_KNN, caption = "More Metrics for KNN Model \\label{tab1}")
+  print.xtable(accuKNN,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+```
+
 
 
 KNN models are very sensitive to feature scaling. Results can easily become biased as variables with larger scales can dominate the distance to calculation.
@@ -632,7 +756,7 @@ rpart.plot(emp_dt1)
 
 ```
 
-#ranger - model$confusionmatrix
+
 
 ```{r}
 
@@ -646,19 +770,20 @@ accuracy <- sum(predictions == actual_labels) / length(actual_labels) * 100
 
 
 # Print the accuracy
-cat("Accuracy:", accuracy, "%\n")
+#cat("Accuracy:", accuracy, "%\n")
 
 ##pruning - before pruning, variance is high and bias is low
 
-cv_emp_dt1 <- prune(emp_dt1, cp = emp_dt1$cptable[which.min(emp_dt1$cptable[,"xerror"]),"CP"])
-#
-# plotcp(emp_dt1)
-#
-rpart.plot(cv_emp_dt1)
+# cv_emp_dt1 <- prune(emp_dt1, cp = emp_dt1$cptable[which.min(emp_dt1$cptable[,"xerror"]),"CP"])
+# #
+# # plotcp(emp_dt1)
+# #
+# rpart.plot(cv_emp_dt1)
 
 
 ```
 
+## Baseline Random Forest
 
 The results from the baseline random forest are presented below. Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. In the baseline model, number of trees are set to 500 by default. It is possible to alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this standard when doing a classification problem.
 
@@ -676,6 +801,9 @@ emp_rf1 <- ranger(
   mtry = floor(sqrt(n_features)),
   respect.unordered.factors = "order",
   seed = 123)
+
+oob_predictions <- emp_rf1$prediction.error
+
 
 #(default_rmse <- sqrt(emp_rf1$prediction.error))
 
@@ -717,10 +845,14 @@ auc_roc <- auc(roc_obj)
 
 metrics_df <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision", "AUC ROC"),
                          Value = c(accuracy_rf, f1_score_rf, recall_rf, precision_rf, auc_roc))
+
+
+
+
 ```
 
 
-```{r Table6 , results = 'asis'}
+```{r Table9 , results = 'asis'}
 
 #print(metrics_df)
 
@@ -736,6 +868,38 @@ metrics <- xtable(metrics_df, caption = "Metrics for Baseline Random Forest \\la
   
   
   
+```
+
+```{r Table10 , results = 'asis'}
+
+#actual_labels_rf <- as.factor(actual_labels_rf)
+
+# Create a confusion matrix
+#confusion_matrix <- confusionMatrix(data = as.factor(predicted_labels_rf), reference = actual_labels_rf)
+
+# Print the confusion matrix
+#print(confusion_matrix)
+
+confusion_matrixrf1 <- tibble(
+  Reference = c(1, 1, 0, 0),
+  Prediction = c(1, 0, 1, 0),
+  Count = c(308, 172, 23, 893)
+)
+
+confusion_matrixrf1$Count <- format(confusion_matrixrf1$Count, nsmall = 0)
+confusion_matrixrf1$Reference <- format(confusion_matrixrf1$Reference, nsmall =0)
+confusion_matrixrf1$Prediction <- format(confusion_matrixrf1$Prediction, nsmall =0)
+
+confusionrf1 <- xtable(confusion_matrixrf1, caption = "Confusion Matrix for Baseline Random Forest \\label{tab1}")
+  print.xtable(confusionrf1,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
 ```
 
 
@@ -773,7 +937,7 @@ accuracy_df <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Trai
 
 ```
 
-```{r Table7 , results = 'asis'}
+```{r Table11 , results = 'asis'}
 
 accu <- xtable(accuracy_df, caption = "More Metrics for Baseline Random Forest \\label{tab1}")
   print.xtable(accu,
@@ -801,6 +965,8 @@ Sample size influences how many observations are drawn for the training of each 
 Having many categorical features with varying number of levels, such as experience or education in this case, or unbalanced categories, then sampling with replacement can lead to biased results. Sampling without replacement can thus lead to a less biased use of all the levels across the trees in the random forest.  
 
 I included the number of trees in the search. As a rule of thumb, the number of trees is 100, 150 and 250 were selected as possibilities.
+
+To select the best model, the grid  search finds the out-of-bag error for each possible model. The model with the lowest RMSE is chosen as the best model. Comappring the RMSE of the baseline model to the tuned model the tuned model is a 1.9 percent improvement over the baseline model. Although this increase is small, the greater accuracy in predicting employee attrition, the better.
 
 ```{r}
 # hyper_grid <- expand.grid(
@@ -887,10 +1053,42 @@ numeric_labels_rf2 <- as.numeric(actual_labels_rf2) - 1
 roc_obj2 <- roc(numeric_labels_rf2, predicted_probs)
 auc_roc2 <- auc(roc_obj)
 #auc_roc2
+```
+
+
+```{r Table12 , results = 'asis'}
+# actual_labels_rf2 <- as.factor(actual_labels_rf2)
+# 
+# # Create a confusion matrix
+# confusion_matrix2 <- confusionMatrix(data = as.factor(predicted_labels_rf2), reference = actual_labels_rf2)
+# 
+# # Print the confusion matrix
+# print(confusion_matrix2)
+
+confusion_matrixrf2 <- tibble(
+  Reference = c(1, 1, 0, 0),
+  Prediction = c(1, 0, 1, 0),
+  Count = c(318, 162, 30, 886)
+)
+
+confusion_matrixrf2$Count <- format(confusion_matrixrf2$Count, nsmall = 0)
+confusion_matrixrf2$Reference <- format(confusion_matrixrf2$Reference, nsmall =0)
+confusion_matrixrf2$Prediction <- format(confusion_matrixrf2$Prediction, nsmall =0)
+
+confusionrf2 <- xtable(confusion_matrixrf2, caption = "Confusion Matrix for Tuned Random Forest \\label{tab1}")
+  print.xtable(confusionrf2,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
 
 ```
 
-```{r Table8 , results = 'asis'}
+```{r Table13 , results = 'asis'}
 
 metrics_df2 <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision", "AUC ROC"),
                          Value = c(accuracy_rf2, f1_score_rf2, recall_rf2, precision_rf2, auc_roc2))
@@ -933,7 +1131,15 @@ test_errorrf2 <- 1 - test_accuracyrf2
 # cat("Test Error:", test_error, "\n")
 ```
 
-```{r Table9 , results = 'asis'}
+## Bias-Variance Trade-off {-}
+
+It is also important to consider the bias-variance trade-off. Prediction errors are generally a result of either bias or variance. In general, decreasing bias will almost always lead to greater variance. Bias is the difference between the expected prediction and the correct value (linear models have high levels of bias).
+
+Variance error is the variability of a model prediction for a given data point. Some models can potentially overfit the training data, resulting in accurate results against the training data but typically poor results against the test data. In other words, the model does not generalise well.
+
+We can adjust the model hyperparameters to achieve the best mix of bias and variance. 
+
+```{r Table14 , results = 'asis'}
 
 accuracyrf_df <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Training Error", "Test Error"),
                          Value = c(train_accuracyrf2, test_accuracyrf2, train_errorrf2, test_errorrf2))
@@ -950,7 +1156,9 @@ accurf <- xtable(accuracyrf_df, caption = "More Metrics for Tuned Random Forest 
 
 ```
 
-Feature importance is considered.
+Assessing variable importance gives an indication of the variance in the model. If the model relies heavily on a few features, then this indicates high variance and over-fitting.  Comparing the two graphs below, it can be seen that with impurity-based variable importance, the model heavily relies on the joining year, specifically, those who joined the company in 2018. This is most likely due to the high attrition rate seen in the exploratory data analysis. Under permutation-based variable importance, there is grater emphasis on more features such as education, payment tier and gender, despite joining year being the most important predictive feature.
+
+Comparing the graphs below to the variable importance plot for the logistic regression, the random forest model appears to suffer from higher variance due to its heavier reliance on certain features. This shows a clear example of the bias-variance trade-off, given the improved accuracy of the random forrest model compared to the logistic model.
 
 ```{r}
 emp_train$Experience <- emp_train$ExperienceInCurrentDomain
@@ -1045,6 +1253,8 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 In order to predict employee attrition, various models and their accuracy levels are assessed. 
 
 The best model in predicting is the random forest model after hyperparameter tuning. This model achieves an accuracy rate of 86 percent.
+
+When assessing the bias-variance tradeoff...
 
 To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
 
