@@ -268,7 +268,8 @@ more, which could potentially indicates an employee's lack of interest
 in work or plans to leave the company.
 
 \includegraphics{Final_project_files/figure-latex/unnamed-chunk-2-1.pdf}
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-2-2.pdf}
+
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-3-1.pdf}
 
 Spreading the data among city, most of the employees are from Bangalore.
 Additionally, most employees have a Bachelors degree. Only 179 employees
@@ -285,9 +286,11 @@ experience.
 fall in employees joining in 2018. Only 367 employees joined in 2018,
 compared to 1180 in 2017.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-3-1.pdf}
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-3-2.pdf}
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-3-3.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-6-1.pdf}
 
 Attrition rates are highest among those with Master's degrees. Nearly
 fifty percent of those with Master's degrees left their job. When
@@ -295,8 +298,41 @@ looking across joining year, almost all the employees that joined in
 2018 resigned. It is possible that some event occurred in 2018 that
 caused that cohort to leave within the next two years.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-4-1.pdf}
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-4-2.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+The table below presents the attrition rate across education, gender,
+city, joining year, experience, and pay level.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rllr}
+  \hline
+ & Variable & Category & Attrition.Rate \\ 
+  \hline
+1 & Education & Bachelors & 31.35 \\ 
+  2 & Education & Masters & 48.80 \\ 
+  3 & Education & PHD & 25.14 \\ 
+  4 & City & Bangalore & 26.71 \\ 
+  5 & City & New Delhi & 31.63 \\ 
+  6 & City & Pune & 50.39 \\ 
+  7 & Gender & Female & 47.15 \\ 
+  8 & Gender & Male & 25.77 \\ 
+  9 & Year & 2012 & 21.63 \\ 
+  10 & Year & 2013 & 33.48 \\ 
+  11 & Year & 2014 & 24.75 \\ 
+  12 & Year & 2015 & 40.72 \\ 
+  13 & Year & 2016 & 22.29 \\ 
+  14 & Year & 2017 & 26.81 \\ 
+  15 & Year & 2018 & 98.64 \\ 
+  16 & Pay & 1 & 36.63 \\ 
+  17 & Pay & 2 & 59.91 \\ 
+  18 & Pay & 3 & 27.52 \\ 
+   \hline
+\end{tabular}
+\caption{Attrition Rate Across Categories \label{tab1}} 
+\end{table}
 
 \hypertarget{feature-and-target-engineering}{%
 \section*{Feature and Target
@@ -324,6 +360,13 @@ and categorical variables, it is not altered.
 \section*{Logistic Regression}\label{logistic-regression}}
 \addcontentsline{toc}{section}{Logistic Regression}
 
+Logistic regression is often used for binary classification problems.
+
+Using logistic regression, three models are estimated to assess the
+accuracy of predicting employee attrition. Model 1 regresses employee
+attrition on education level. Model 2 adds payment tier as another
+feature. Model 3 regresses employee attrition on all available features.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{rrrrrrrr}
@@ -335,7 +378,7 @@ and categorical variables, it is not altered.
   3 & 0.70 & 0.72 & 0.74 & 0.74 & 0.75 & 0.76 & 0.00 \\ 
    \hline
 \end{tabular}
-\caption{Short Table Example \label{tab1}} 
+\caption{Accuracy across logistic models \label{tab1}} 
 \end{table}
 
 From the logistic regression, model accuracy ranges from 70 and 76
@@ -348,7 +391,30 @@ In terms of the most important features, gender and the joining year of
 variables do carry some level of importance, therefore the model is not
 overly reliant on gender and joining year.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-7-1.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-11-1.pdf}
+
+\begin{verbatim}
+## [1] 0.43125
+\end{verbatim}
+
+\begin{verbatim}
+## [1] 0.5345877
+\end{verbatim}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Metric & Value \\ 
+  \hline
+1 & Accuracy & 0.74 \\ 
+  2 & F1 Score & 0.53 \\ 
+  3 & Recall & 0.43 \\ 
+  4 & Precision & 0.70 \\ 
+   \hline
+\end{tabular}
+\caption{Metrics for Logistic Regression \label{tab1}} 
+\end{table}
 
 \begin{table}[H]
 \centering
@@ -378,17 +444,61 @@ overly reliant on gender and joining year.
 \section*{KNN}\label{knn}}
 \addcontentsline{toc}{section}{KNN}
 
-looking at a K-Nearest Neighbours approach, a grid-search is conducted
-to find the optimal level of K. The accuracy metric is used, given that
-is an appropriate metric for a classification problem. The grid search
-looks for the optimal level of K between 2 and 25. The model selects k
-=3 as the optimal value. The accuracy rate for k=3 is 78.3\%.
+The K-nearest neighbour (KNN) algorithm predicts each observation based
+on its similarity to other observations. It identifies ``k''
+observations that are most similar .. and uses the most common class of
+those k observations as the predicted output ().
 
-For the testing data, the model's accuracy is slightly lower at 77\%.
+Using the KNN approach, a grid-search is conducted to find the optimal
+level of K. Low values of K makes the model sensitive to noise and less
+generalisable while large values can lead to oversmoothing.
 
-\begin{verbatim}
-## [1] 0.7743553
-\end{verbatim}
+The accuracy metric is used, given that is an appropriate metric for a
+classification problem. The grid search uses cross-validation techniques
+to looks for the optimal level of K between 2 and 25. The model selects
+k =3 as the optimal value. The accuracy rate for k=3 is 78.3\%. For the
+testing data, the model's accuracy is slightly lower at 77\%.
+
+Alongside the model's accuracy, the precision, recall and F1 score are
+also examined. Precision measures the proportion of correctly predicted
+positive instances, also called true positives, out of all instances
+predicted as positive. A high precision indicates few false positives.
+In this case the precision is 74\%, which is relatively high.
+
+Recall, also known as the model's sensitivity, measures the proportion
+of correctly predicted positive instances out of all actual positives
+instances. In other words, it is the proportion of true positives out of
+both the true positives and false negatives. A higher recall indicates
+few false negatives. In this instance, the recall is much lower (52\%).
+This indicates that the model has a higher false negative rate than
+false positive rate.
+
+The F1 score balances both the precision and recall, and provides an
+indication of the overall performance of the model. The F1 score for the
+optimal K-nearest neighbours model is 61.2\%, indicating that the model
+is somewhat adequate.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Metric & Value \\ 
+  \hline
+1 & Accuracy & 0.77 \\ 
+  2 & F1 Score & 0.62 \\ 
+  3 & Recall & 0.53 \\ 
+  4 & Precision & 0.74 \\ 
+   \hline
+\end{tabular}
+\caption{Metrics for KNN \label{tab1}} 
+\end{table}
+
+KNN models are very sensitive to feature scaling. Results can easily
+become biased as variables with larger scales can dominate the distance
+to calculation.
+
+On the other hand, KNN is appropriate for small datasets such as this
+one.
 
 \hypertarget{random-forests}{%
 \section*{Random Forests}\label{random-forests}}
@@ -406,7 +516,7 @@ between-tree correlation.
 Following the general rule-of-thumb, there is a 70:30 split among the
 training and testing data.
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-8-1.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-12-1.pdf}
 
 \#ranger - model\$confusionmatrix
 
@@ -414,7 +524,7 @@ training and testing data.
 ## Accuracy: 82.80802 %
 \end{verbatim}
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-9-1.pdf}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-13-1.pdf}
 
 The results from the baseline random forest are presented below. Random
 Forests help to reduce tree correlation. It does so by using
@@ -422,10 +532,6 @@ split-variable randomisation. In the baseline model, number of trees are
 set to 500 by default. It is possible to alter the m(try) parameter, but
 currently it is set to the square root of the number of parameters,
 given that this standard when doing a classification problem.
-
-\begin{verbatim}
-## [1] 0.3898466
-\end{verbatim}
 
 \begin{table}[H]
 \centering
@@ -511,26 +617,6 @@ fraction of 0.63.
 ## [1] 0.3741739
 \end{verbatim}
 
-\begin{verbatim}
-## [1] 0.8495702
-\end{verbatim}
-
-\begin{verbatim}
-## [1] 0.875
-\end{verbatim}
-
-\begin{verbatim}
-## [1] 0.65625
-\end{verbatim}
-
-\begin{verbatim}
-## [1] 0.75
-\end{verbatim}
-
-\begin{verbatim}
-## Area under the curve: 0.7914
-\end{verbatim}
-
 \begin{table}[H]
 \centering
 \begin{tabular}{rlr}
@@ -562,10 +648,9 @@ fraction of 0.63.
 \caption{More Metrics for Tuned Random Forest \label{tab1}} 
 \end{table}
 
-\includegraphics{Final_project_files/figure-latex/unnamed-chunk-14-1.pdf}
+Feature importance is considered.
 
-\hypertarget{results}{%
-\section{Results}\label{results}}
+\includegraphics{Final_project_files/figure-latex/unnamed-chunk-18-1.pdf}
 
 \hfill
 
@@ -598,20 +683,6 @@ templates for rmarkdown}. Stellenbosch, South Africa: Bureau for
 Economic Research.
 
 \end{CSLReferences}
-
-\hypertarget{appendix}{%
-\section*{Appendix}\label{appendix}}
-\addcontentsline{toc}{section}{Appendix}
-
-\hypertarget{appendix-a}{%
-\subsection*{Appendix A}\label{appendix-a}}
-\addcontentsline{toc}{subsection}{Appendix A}
-
-Some appendix information here
-
-\hypertarget{appendix-b}{%
-\subsection*{Appendix B}\label{appendix-b}}
-\addcontentsline{toc}{subsection}{Appendix B}
 
 \bibliography{Tex/ref}
 

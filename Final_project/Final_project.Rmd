@@ -140,13 +140,16 @@ Given that earnings are generally an important determinant in whether an employe
 pacman::p_load(forcats)
 
 library(wesanderson)
-palette <- wes_palette("GrandBudapest1", 2)
-palette2 <- wes_palette("GrandBudapest1", 1)
+palette <- wes_palette("Zissou1", 2)
+palette2 <- wes_palette("Zissou1", 1)
 
 source("code/plot_spread.R")
 spread <- plot_spread(employee, City)
 spread
+```
 
+
+```{r}
 spread_ed <- plot_spread(employee, Education)
 spread_ed
 ```
@@ -165,13 +168,19 @@ age_plot <- ggplot(employee, aes(x = Age)) +
   labs(x = "Age", y = "Count")  +
   ggtitle("Distribution of Age") + theme_classic()
 age_plot
+```
 
+
+```{r}
 exp_plot <- ggplot(employee, aes(x = ExperienceInCurrentDomain)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Experience", y = "Count") +
   ggtitle("Distribution of Experience") +theme_classic()
 exp_plot
+```
 
+
+```{r}
 year_plot <- ggplot(employee, aes(x = JoiningYear)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Year Joined", y = "Count") +
@@ -189,7 +198,10 @@ educ_plot <- ggplot(employee, aes(x = Education, fill = factor(LeaveOrNot))) +
   labs(x = "Education", y = "Attrition Rate", fill = "Attrition") +
   ggtitle("Attrition Rates by Education") + theme_classic()
 educ_plot
+```
 
+
+```{r}
 year_att_plot <- ggplot(employee, aes(x = factor(JoiningYear), fill = factor(LeaveOrNot))) +
   geom_bar(position = "fill") +
   labs(x = "Joining Year", y = "Attrition Rate", fill = "Attrition") + scale_fill_manual(values = palette) +
@@ -197,6 +209,76 @@ year_att_plot <- ggplot(employee, aes(x = factor(JoiningYear), fill = factor(Lea
 
 year_att_plot
 ```
+
+The table below presents the attrition rate across education, gender, city, joining year, experience, and pay level. 
+
+```{r ShortTableds, results = 'asis'}
+
+library(xtable)
+
+#Table of attrition rate
+attrition_rate_education <- employee %>%
+  group_by(Education) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+# Calculate attrition rate by Gender
+attrition_rate_gender <- employee %>%
+  group_by(Gender) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by City
+attrition_rate_city <- employee %>%
+  group_by(City) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Joining Year
+attrition_rate_year <- employee %>%
+  group_by(JoiningYear) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+#Calculate attrition rate by Payment Tier
+attrition_rate_pay <- employee %>%
+  group_by(PaymentTier) %>%
+  summarize(Attrition_Rate = mean(LeaveOrNot) * 100)
+
+education_labels <- c("Bachelors", "Masters", "PHD") 
+city_labels <- c("Bangalore", "New Delhi", "Pune") 
+gender_labels <- c("Female", "Male")  
+year_labels <- c("2012", "2013", "2014", "2015", "2016", "2017", "2018")  
+pay_labels <- c("1", "2", "3") 
+
+education_table <- data.frame(Variable = education_labels, Attrition_Rate = attrition_rate_education$Attrition_Rate)
+city_table <- data.frame(Variable = city_labels, Attrition_Rate = attrition_rate_city$Attrition_Rate)
+gender_table <- data.frame(Variable =gender_labels, Attrition_Rate = attrition_rate_gender$Attrition_Rate)
+year_table <- data.frame(Variable = year_labels, Attrition_Rate = attrition_rate_year$Attrition_Rate)
+pay_table <- data.frame(Variable = pay_labels, Attrition_Rate = attrition_rate_pay$Attrition_Rate)
+
+colnames(education_table) <- c("Variable", "Attrition Rate")
+colnames(city_table) <- c("Variable", "Attrition Rate")
+colnames(gender_table) <- c("Variable", "Attrition Rate")
+colnames(year_table) <- c("Variable", "Attrition Rate")
+colnames(pay_table) <- c("Variable", "Attrition Rate")
+
+combined_table <- rbind(
+  data.frame(Variable = "Education", Category = education_table$Variable, `Attrition Rate` = education_table$`Attrition Rate`),
+  data.frame(Variable = "City", Category = city_table$Variable, `Attrition Rate` = city_table$`Attrition Rate`),
+  data.frame(Variable = "Gender", Category = gender_table$Variable, `Attrition Rate` = gender_table$`Attrition Rate`),
+  data.frame(Variable = "Year", Category = year_table$Variable, `Attrition Rate` = year_table$`Attrition Rate`),
+  data.frame(Variable = "Pay", Category = pay_table$Variable, `Attrition Rate` = pay_table$`Attrition Rate`)
+)
+
+table_ds <- xtable(combined_table, caption = "Attrition Rate Across Categories \\label{tab1}")
+  print.xtable(table_ds,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
+```
+
 
 # Feature and Target Engineering {-}
 
@@ -245,6 +327,10 @@ employee <- employee %>%
 ```
 
 # Logistic Regression {-}
+
+Logistic regression is often used for binary classification problems. 
+
+Using logistic regression, three models are estimated to assess the accuracy of predicting employee attrition. Model 1 regresses employee attrition on education level. Model 2 adds payment tier as another feature. Model 3 regresses employee attrition on all available features.
 
 ```{r}
 
@@ -321,7 +407,7 @@ s <- summary(
 
 ```{r ShortTable, results = 'asis'}
 
-library(xtable)
+
 data <- s %>% tibble::as_tibble()
 
 table <- xtable(data, caption = "Accuracy across logistic models \\label{tab1}")
@@ -352,10 +438,38 @@ pred_class <- predict(cv_model3, churn_train)
 important_f <- vip(cv_model3, num_features = 14)
 important_f
 
+#calculate metrics from the confusion metrics for comparison with other algorithms
+accuracy_logistic <- 0.7418
+sensitivity_l <- 0.4313
+precision_l <- 483/(483+204)
+recall_l <- 483/(483+637)
+#recall_l
+f1_score_l <- 2*(precision_l*recall_l)/(precision_l + recall_l)
+#f1_score_l
+
+
+metrics_log <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision"),
+                         Value = c(accuracy_logistic, f1_score_l, recall_l, precision_l))
+
+
+```
+ 
+```{r Table3 , results = 'asis'}
+
+metrics_l <- xtable(metrics_log, caption = "Metrics for Logistic Regression \\label{tab1}")
+  print.xtable(metrics_l,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
 ```
  
 
-```{r Table2 , results = 'asis'}
+```{r Table4 , results = 'asis'}
 
 
 library(broom)
@@ -385,7 +499,9 @@ table_results <- xtable(t, caption = "Logistic Regression Results \\label{tab1}"
 
 # KNN  {-}
 
-looking at a K-Nearest Neighbours approach, a grid-search is conducted to find the optimal level of K. Low values of K makes the model sensitive to noise and less generalisable while large values can lead to oversmoothing.
+The K-nearest neighbour (KNN) algorithm predicts each observation based on its similarity to other observations. It identifies "k" observations that are most similar .. and uses the most common class of those k observations as the predicted output ().
+
+Using the KNN approach, a grid-search is conducted to find the optimal level of K. Low values of K makes the model sensitive to noise and less generalisable while large values can lead to oversmoothing.
 
 The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search uses cross-validation techniques to looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 78.3%. For the testing data, the model's accuracy is slightly lower at 77%. 
 
@@ -463,7 +579,26 @@ f1_score_KNN <- 2 * (precision_KNN * recall_KNN) / (precision_KNN + recall_KNN)
 #f1_score_KNN
 
 
+metrics_knn <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision"),
+                         Value = c(accuracy_KNN, f1_score_KNN, recall_KNN, precision_KNN))
+
 ```
+
+```{r Table5 , results = 'asis'}
+
+metrics_k <- xtable(metrics_knn, caption = "Metrics for KNN \\label{tab1}")
+  print.xtable(metrics_k,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+
+
+```
+
 
 KNN models are very sensitive to feature scaling. Results can easily become biased as variables with larger scales can dominate the distance to calculation.
 
@@ -542,7 +677,7 @@ emp_rf1 <- ranger(
   respect.unordered.factors = "order",
   seed = 123)
 
-(default_rmse <- sqrt(emp_rf1$prediction.error))
+#(default_rmse <- sqrt(emp_rf1$prediction.error))
 
 #prediction
 emp_test$LeaveOrNot <- as.factor(emp_test$LeaveOrNot)
@@ -585,7 +720,7 @@ metrics_df <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision
 ```
 
 
-```{r Table3 , results = 'asis'}
+```{r Table6 , results = 'asis'}
 
 #print(metrics_df)
 
@@ -638,7 +773,7 @@ accuracy_df <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Trai
 
 ```
 
-```{r Table4 , results = 'asis'}
+```{r Table7 , results = 'asis'}
 
 accu <- xtable(accuracy_df, caption = "More Metrics for Baseline Random Forest \\label{tab1}")
   print.xtable(accu,
@@ -728,19 +863,19 @@ predicted_labels_rf2 <- predictions_rf2$predictions
 #accuracy
 actual_labels_rf2 <- emp_test$LeaveOrNot
 accuracy_rf2 <- sum(predictions_rf2$predictions == actual_labels_rf2) / length(actual_labels_rf2)
-accuracy_rf2
+#accuracy_rf2
 
 #precision
 precision_rf2 <- sum(predicted_labels_rf2 == 1 & actual_labels_rf2 == 1) / sum(predicted_labels_rf2 == 1)
-precision_rf2
+#precision_rf2
 
 #recall
 recall_rf2 <- sum(predicted_labels_rf2 == 1 & actual_labels_rf2 == 1) / sum(actual_labels_rf2 == 1)
-recall_rf2
+#recall_rf2
 
 #f1-score
 f1_score_rf2 <- 2 * (precision_rf2 * recall_rf2) / (precision_rf2 + recall_rf2)
-f1_score_rf2
+#f1_score_rf2
 
 library(pROC)
 predicted_probs2 <- as.numeric(predictions_rf$predictions)
@@ -751,11 +886,11 @@ numeric_labels_rf2 <- as.numeric(actual_labels_rf2) - 1
 # Calculate the ROC curve and AUC-ROC
 roc_obj2 <- roc(numeric_labels_rf2, predicted_probs)
 auc_roc2 <- auc(roc_obj)
-auc_roc2
+#auc_roc2
 
 ```
 
-```{r Table5 , results = 'asis'}
+```{r Table8 , results = 'asis'}
 
 metrics_df2 <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision", "AUC ROC"),
                          Value = c(accuracy_rf2, f1_score_rf2, recall_rf2, precision_rf2, auc_roc2))
@@ -798,7 +933,7 @@ test_errorrf2 <- 1 - test_accuracyrf2
 # cat("Test Error:", test_error, "\n")
 ```
 
-```{r Table6 , results = 'asis'}
+```{r Table9 , results = 'asis'}
 
 accuracyrf_df <- data.frame(Metric = c("Training Accuracy", "Test Accuracy", "Training Error", "Test Error"),
                          Value = c(train_accuracyrf2, test_accuracyrf2, train_errorrf2, test_errorrf2))
@@ -897,8 +1032,6 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 <!-- \end{align} -->
 <!-- $$ -->
 
-# Results
-
 
 
 \hfill
@@ -925,11 +1058,5 @@ To cite this package, simply type citation("Texevier") in Rstudio to get the cit
 <div id="refs"></div>
 
 
-# Appendix {-}
 
-## Appendix A {-}
-
-Some appendix information here
-
-## Appendix B {-}
 
