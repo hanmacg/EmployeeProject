@@ -37,7 +37,7 @@ CommonAffiliation_12: TRUE # If Author 1 and 2 have a common affiliation. Works 
 # Author3: "John Doe"
 # Email3: "Joe\\@gmail.com"
 
-CorrespAuthor_1: TRUE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
+# CorrespAuthor_1: TRUE  # If corresponding author is author 3, e.g., use CorrespAuthor_3: TRUE
 
 # Comment out below to remove both. JEL Codes only given if keywords also given.
 # keywords: "Multivariate GARCH \\sep Kalman Filter \\sep Copula" # Use \\sep to separate
@@ -92,7 +92,7 @@ output:
     fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3.5
 abstract: |
-  This paper investigates employee attributes and attrition. Random forests are used to build a model to predict employee attrition based on key attributes, such as education, pay, gender, and age, among others.
+  This paper investigates employee attributes and attrition. Predictive models for employee attrition are built based on key attributes, such as education, pay, gender, and age, among others. After assessing  logistic, K-Nearest Neighbours and Random Forest models, a tuned random forest model is found to be the best predictor of this particular classification problem due to its high accuracy rates and good performance on unseen data.
 ---
 
 <!-- First: Set your default preferences for chunk options: -->
@@ -121,9 +121,9 @@ write_rds(Example_data, path = "data/Example_data.rds")
 <!-- # Start Writing here: -->
 <!-- ############################## -->
 
-# Introduction \label{Introduction}
+# Introduction {-}
 
-Losing employees can be costly for businesses. Predicting attrition and its key determinants or attributes can help estimate future employee turnover and attempt to reduce it.
+Losing employees can be costly for businesses. Predicting attrition and its key determinants or attributes can help estimate future employee turnover and consequently help companies attempt to reduce it. This paper compares various models in an attempt to predict employee attrition from a company-wide dataset on 4653 employees. After exploring the data, a logistic model is estimated and predictions across training and test data are conducted. Following this, predictions are generated from an optimised K-Nearest Neighbours model. Lastly, random forest models are investigated in an attempt to find the best predictive model for the classifcation problem at hand. 
 
 ```{r}
 employee <- read.csv("C:/Users/hanna/OneDrive/Documents/Data Science/Project/EmployeeProject/Final_Project/data/Employee.csv")
@@ -131,11 +131,14 @@ employee <- read.csv("C:/Users/hanna/OneDrive/Documents/Data Science/Project/Emp
 
 # Exploratory Data Analaysis {-}
 
-The dataset contains information on 4653 employees and whether they attrited or not. The employee attributes available include demographic information such as age and gender. Employees are based in one of three major cities in India, namely Bangalore, Pune and New Delhi. The year an employee joined a company (Joining Year), ranging from 2014 to 2018, is also considered. 
+The dataset contains information on 4653 employees and whether they left their job or not. A variety of employee attributes are available, including demographic information such as age and gender. Employees are based in one of three major cities in India, namely Bangalore, Pune and New Delhi. The year an employee joined a company, ranging from 2014 to 2018, is also considered. 
 
-Given that earnings are generally an important determinant in whether an employee leaves their job, their payment tier, scaled from 1, being the highest, and 3, being the lowest, is included in the data. Additionally, years of experience in their current field is included as well as their highest level of education (Bachelor's, Master's, PhD). There is also information on whether an employee kept out of projects for 1 month or more, which could potentially indicates an employee's lack of interest in work or plans to leave the company. 
+Given that earnings are generally an important determinant in whether an employee leaves their job, their payment tier, scaled from 1, being the highest, and 3, being the lowest, is included in the data. Additionally, years of experience in their current field is included as well as their highest level of education (Bachelor's, Master's, PhD). There is also information on whether an employee kept out of projects for 1 month or more, which could potentially indicates an employee's lack of interest in work or plans to leave the company.
 
-```{r}
+On examination of the spread of employees across cities, most of the employees are from Bangalore. Regarding education level, most employees have a Bachelors degree. Only 179 employees have a PHD and 873 have Master's degrees. 
+
+```{r Figure1, warning =  FALSE, fig.align = 'center', fig.cap = "City Spread \\label{Figure1}", fig.height = 3, fig.width = 6, dev = 'png'}
+
 #spread of data across city and education
 pacman::p_load(forcats)
 
@@ -149,19 +152,18 @@ spread
 ```
 
 
-```{r}
+```{r Figure2, warning =  FALSE, fig.align = 'center', fig.cap = "Education Spread \\label{Figure2}", fig.height = 3, fig.width = 6, dev = 'png'}
 spread_ed <- plot_spread(employee, Education)
 spread_ed
 ```
 
-
-Spreading the data among city, most of the employees are from Bangalore. Additionally, most employees have a Bachelors degree. Only 179 employees have a PHD and 873 have Master's degrees. Looking at age, which ranges between 22 and 41, the majority of employees are in their mid to late twenties, skewing the distribution to right.  
-
+Looking at age, which ranges between 22 and 41, the majority of employees are in their mid to late twenties, skewing the distribution to right. 
+ 
 Regarding experience, very few individuals have 6 or 7 years experience (only 16 employees in total) in their current field of work, most likely due to the young employee base. Most commonly, individuals have 2 years experience. 
 
 2017 saw the most employees join the company. There was a substantial fall in employees joining in 2018. Only 367 employees joined in 2018, compared to 1180 in 2017.
 
-```{r}
+```{r Figure3, warning =  FALSE, fig.align = 'center', fig.cap = "Age Distribution \\label{Figure3}", fig.height = 3, fig.width = 6, dev = 'png'}
 #distribution
 age_plot <- ggplot(employee, aes(x = Age)) +
   geom_histogram(binwidth = 2, fill = palette2, color = "black") +
@@ -171,7 +173,7 @@ age_plot
 ```
 
 
-```{r}
+```{r Figure4, warning =  FALSE, fig.align = 'center', fig.cap = "Experience Distribution \\label{Figure4}", fig.height = 3, fig.width = 6, dev = 'png'}
 exp_plot <- ggplot(employee, aes(x = ExperienceInCurrentDomain)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Experience", y = "Count") +
@@ -180,7 +182,7 @@ exp_plot
 ```
 
 
-```{r}
+```{r Figure5, warning =  FALSE, fig.align = 'center', fig.cap = "Joining Year Distribution \\label{Figure5}", fig.height = 3, fig.width = 6, dev = 'png'}
 year_plot <- ggplot(employee, aes(x = JoiningYear)) +
   geom_histogram(binwidth = 1, fill = palette2, color = "black") +
   labs(x = "Year Joined", y = "Count") +
@@ -189,9 +191,9 @@ year_plot
 
 ```
 
-Attrition rates are highest among those with Master's degrees. Nearly fifty percent of those with Master's degrees left their job. When looking across joining year, almost all the employees that joined in 2018 resigned. It is possible that some event occurred in 2018 that caused that cohort to leave within the next two years. 
+Attrition rates are highest among those with Master's degrees. Nearly fifty percent of those with Master's degrees left their job. When looking across joining year, almost all the employees that joined in 2018 resigned. It is possible that some event occurred in 2018 that caused that cohort to subsequently leave.
 
-```{r}
+```{r Figure6, warning =  FALSE, fig.align = 'center', fig.cap = "Attrition by Education \\label{Figure6}", fig.height = 3, fig.width = 6, dev = 'png'}
 #Attrition Rate
 educ_plot <- ggplot(employee, aes(x = Education, fill = factor(LeaveOrNot))) +
   geom_bar(position = "fill") + scale_fill_manual(values = palette) +
@@ -201,7 +203,7 @@ educ_plot
 ```
 
 
-```{r}
+```{r Figure7, warning =  FALSE, fig.align = 'center', fig.cap = "Attrition by Joining Year \\label{Figure7}", fig.height = 3, fig.width = 6, dev = 'png'}
 year_att_plot <- ggplot(employee, aes(x = factor(JoiningYear), fill = factor(LeaveOrNot))) +
   geom_bar(position = "fill") +
   labs(x = "Joining Year", y = "Attrition Rate", fill = "Attrition") + scale_fill_manual(values = palette) +
@@ -282,13 +284,13 @@ table_ds <- xtable(combined_table, caption = "Attrition Rate Across Categories \
 
 # Feature and Target Engineering {-}
 
-Since my predictor variable (Leave or Not) is binary, there is no need for target engineering.
+Since the predictor variable (Leave or Not) is binary (1 if the employee leaves and 0 if not), there is no need for target engineering. Given the binary nature of this outcome variable, prediction can be framed a classification problem.
 
-Regarding feature engineering, most of the features are categorical. Gender and whether a person benched or not (removed themselves from projects in the lst month) are transformed into dummies. Joining year is one-hot encoded, resulting in binary variables for each of the 5 joining years. 
+Regarding feature engineering, most of the features are categorical. Gender and whether a person benched or not (removed themselves from projects in the last month) are transformed into dummies. Joining year is one-hot encoded, resulting in binary variables for each of the 5 joining years. 
 
-Education is label encoded as it can be ordered (Bachelors being the lowest level of education, Master's one higher and PHD being the highest level of education). Payment Tier and experience in the current domain were already label encoded and thus do not require further engineering. 
+Education is label encoded as it can be ordered (Bachelors being the lowest level of education, Master's one higher and PHD being the highest level of education). Payment Tier is already label encoded and thus do not require further engineering. 
 
-Since age is numeric and random forests are able to handle both numeric and categorical variables, it is not altered.
+Since age and experience are numeric and random forests are able to handle both numeric and categorical variables, it is not altered. These two variables are only altered for the K-Nearest Neighbours (KNN) model, which is particularly sensitive to feature scaling. If features have different scales in KNN, features with larger scales may dominate the distance calculations and bias the results. 
 
 ```{r}
 #create a binary variable for gender - female is 0 and male is 1
@@ -328,9 +330,9 @@ employee <- employee %>%
 
 # Logistic Regression {-}
 
-Logistic regression is often used for binary classification problems. 
+Logistic regression is often used for binary classification problems, such as this one. Under logistic regression, three models are estimated to assess their accuracy of predicting employee attrition. Model 1 regresses employee attrition on education level. Model 2 adds payment tier as another feature. Model 3 regresses employee attrition on all available features.
 
-Using logistic regression, three models are estimated to assess the accuracy of predicting employee attrition. Model 1 regresses employee attrition on education level. Model 2 adds payment tier as another feature. Model 3 regresses employee attrition on all available features.
+Following the rule-of-thumb, 70 percent of the data is split into the training data and the other 30% is the test data. In each model, a 10-fold cross validation is performed, which allows the the model to fit to different parts of the training data and be tested against different validation sets.
 
 ```{r}
 
@@ -422,9 +424,19 @@ table <- xtable(data, caption = "Accuracy across logistic models \\label{tab1}")
 
 ```
 
-From the logistic regression, model accuracy ranges from 70 and 76 percent for the full model. The weakest model is model 1, which regresses attrition on education, has an accuracy rate between 63 and 66 percent.
+From the logistic regression, model accuracy ranges from 70 and 76 percent for the full model. The weakest model is model 1, which regresses attrition on education only, and has an accuracy rate between 63 and 66 percent.
 
-In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of importance, therefore the model is not overly reliant on gender and joining year. This also provides an indication that the variance of the model is not too high. While the model suffers some level of bias, given that the accuracy is the model is approximately 74 percent, it does not suffer from high bias.
+The confusion matrix for the full, and most accurate, model is presented in Table 3 below. In Tables 4 and 5, various metrics for this model are displayed. Table 4 presents the accuracy, F1 score, recall and precision. The accuracy of the model is 74%. 
+
+Recall, also known as the model's sensitivity, measures the proportion of correctly predicted positive instances out of all actual positives instances. In other words, it is the proportion of true positives out of both the true positives and false negatives. A higher recall indicates few false negatives. In this instance, the recall is 43% indicating that there are many false negatives in the models.
+
+Precision measures the proportion of correctly predicted positive instances, also called true positives, out of all instances predicted as positive. A high precision indicates few false positives. The precision rate for this model is 70%. Therefore, there are few false positives.
+
+The F1 score balances both the precision and recall, and provides an indication of the overall performance of the model. In this case, the F1 score balances out to 53 percent, mostly due to the poor recall rate, and consequently high false negatives, produced by the model.
+
+In these models, it is also important to consider the bias-variance trade-off. Prediction errors are generally a result of either bias or variance. In general, decreasing bias will almost always lead to greater variance (Boehmke and Greenwell, 2019). Some models can potentially overfit the training data, resulting in accurate results against the training data but typically poor results against the test data. In other words, the model does not generalise well.
+
+In Table 1.5, the accuracy and error from the testing and training datasets are examined. The testing accuracy and error reflect on the models ability against unseen data. Given that the training accuracy is higher than the test accuracy (74% compared to 71%), there is some slight overfitting in the training data. In terms of the bias-variance trade-off, this implies that bias relatively low but the variance is relatively high. Nevertheless, the accuracy and error rates are relatively similar indicating that there is the model generalises somewhat well to the testing data.
 
 ```{r Table2, results = 'asis'}
 pred_class <- predict(cv_model3, churn_train)
@@ -455,8 +467,7 @@ lconf <- xtable(confusion_matrix_l, caption = "Confusion Matrix for Logistic Mod
              caption.placement = 'bottom'
              )
 
-important_f <- vip(cv_model3, num_features = 14)
-important_f
+
 ```
 
 
@@ -521,33 +532,37 @@ table_logistic <- xtable(accuracy_log, caption = "More Metrics for Logistic Regr
              caption.placement = 'bottom'
              )
 
-
+important_f <- vip(cv_model3, num_features = 14)
+important_f
 ```
 
+In terms of the most important features, gender and the joining year of 2017 are the most important predictive features. Most of the other variables do carry some level of importance, therefore the model is not overly reliant on gender and joining year. This also provides an indication that the variance of the model is not too high. While the model suffers some level of bias, given that the accuracy is the model is approximately 74 percent, it does not suffer from high bias.
+
+The disadvantage to logistic models is that they assume linearity. It is plausible that there are some nonlinear relationships between employee attributes and attrition. Given that KNN and Random Forests are better equipped to handle more complex problems, these models are evaluated in the subsequent sections.
 
 ```{r Table5 , results = 'asis'}
 
 
-library(broom)
-model3 <- glm(
-  LeaveOrNot ~ Age + male + benched + ExperienceInCurrentDomain + bangalore + pune + education + PaymentTier + Y2014 + Y2015 + Y2016 + Y2017,
-  family = "binomial",
-  data = churn_train
-  )
-
-t <- tidy(model3)
-#t
-
-table_results <- xtable(t, caption = "Logistic Regression Results \\label{tab1}")
-  print.xtable(table_results,
-             # tabular.environment = "longtable",
-             floating = TRUE,
-             table.placement = 'H',
-             # scalebox = 0.3,
-             comment = FALSE,
-             caption.placement = 'bottom'
-             )
-  
+# library(broom)
+# model3 <- glm(
+#   LeaveOrNot ~ Age + male + benched + ExperienceInCurrentDomain + bangalore + pune + education + PaymentTier + Y2014 + Y2015 + Y2016 + Y2017,
+#   family = "binomial",
+#   data = churn_train
+#   )
+# 
+# t <- tidy(model3)
+# #t
+# 
+# table_results <- xtable(t, caption = "Logistic Regression Results \\label{tab1}")
+#   print.xtable(table_results,
+#              # tabular.environment = "longtable",
+#              floating = TRUE,
+#              table.placement = 'H',
+#              # scalebox = 0.3,
+#              comment = FALSE,
+#              caption.placement = 'bottom'
+#              )
+#   
 
 
 ```
@@ -555,19 +570,19 @@ table_results <- xtable(t, caption = "Logistic Regression Results \\label{tab1}"
 
 # KNN  {-}
 
-The K-nearest neighbour (KNN) algorithm predicts each observation based on its similarity to other observations. It identifies "k" observations that are most similar .. and uses the most common class of those k observations as the predicted output ().
+The K-nearest neighbour (KNN) algorithm predicts each observation based on its similarity to other observations. It identifies "k" observations that are most similar to the new record being predicted and uses the most common class of those k observations as the predicted output (Boehmke and Greenwell, 2019).
 
-Using the KNN approach, a grid-search is conducted to find the optimal level of K. Low values of K makes the model sensitive to noise and less generalisable while large values can lead to oversmoothing.
+Using the KNN approach, a grid-search is conducted to find the optimal level of K. Low values of K makes the model sensitive to noise and less generalisable while large values can lead to oversmoothing (Boehmke and Greenwell, 2019).
 
-The accuracy metric is used, given that is an appropriate metric for a classification problem. The grid search uses cross-validation techniques to looks for the optimal level of K between 2 and 25. The model selects k =3 as the optimal value. The accuracy rate for k=3 is 78.3%. For the testing data, the model's accuracy is slightly lower at 77%. 
+The accuracy metric is used to find the optimal value for K, given that is an appropriate metric for a classification problem. The grid search uses cross-validation techniques to looks for the optimal level of K between 2 and 25. The model selects k =6 as the optimal value. The accuracy rate for k=6 is 85% on the training data. For the testing data, the model's accuracy is slightly lower at 83%. This is a substantial improvement compared to the logistic model. 
 
-Alongside the model's accuracy, the precision, recall and F1 score are also examined. Precision measures the proportion of correctly predicted positive instances, also called true positives, out of all instances predicted as positive. A high precision indicates few false positives. In this case the precision is 74%, which is relatively high.
+Alongside the model's accuracy, the precision, recall and F1 score are also examined and presented in Table 1.8. The precision is 85%, which is relatively high. This indicates the model is good at predicting positive outcomes. The recall, however, is much lower (60%). This indicates that the model has a higher false negative rate than false positive rate, and is not as good at predicting negative outcomes.
 
-Recall, also known as the model's sensitivity, measures the proportion of correctly predicted positive instances out of all actual positives instances. In other words, it is the proportion of true positives out of both the true positives and false negatives. A higher recall indicates few false negatives. In this instance, the recall is much lower (52%). This indicates that the model has a higher false negative rate than false positive rate.
-
-The F1 score balances both the precision and recall, and provides an indication of the overall performance of the model. The F1 score for the optimal K-nearest neighbours model is 61.2%, indicating that the model is somewhat adequate.
+The F1 score for the optimal K-nearest neighbours model is 70%, indicating that the model is adequate. These metrics all dominate the logistic regression, indicating that the KNN model performs better.
 
 ```{r KNN,  warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure1}", fig.ext = 'png', fig.height = 3, fig.width = 6}
+
+library(recipes)
 
 knndf <- df
 knndf$education <- factor(knndf$education, levels = c(1, 2, 3))
@@ -723,18 +738,20 @@ accuKNN <- xtable(accuracy_KNN, caption = "More Metrics for KNN Model \\label{ta
 ```
 
 
+Overall, the KNN performs well in predicting employee attrition and is useful for this particular classification problem. However, KNN models are very sensitive to feature scaling. Results can easily become biased as variables with larger scales can dominate the distance to calculation. Random forests, on the other hand, are generally more robust, especially when dealing with outliers or noise in the data. As a result, random forests are examined in the following section for comparison.
 
-KNN models are very sensitive to feature scaling. Results can easily become biased as variables with larger scales can dominate the distance to calculation.
-
-On the other hand, KNN is appropriate for small datasets such as this one. 
 
 # Random Forests {-}
 
-Random forests are powerful out-of the box algorithms that generally have very good predictive accuracy (). The come with the benefits of decision trees and bagging but greatly reduce instability and between-tree correlation.
+Random forests are powerful out-of-the-box algorithms that generally have very good predictive accuracy (Boehmke and Greenwell, 2019). They combine multiple decision trees to make predictions. One key feature of random forests is their ability to mitigate tree correlation and reduce instability. In sum, random forests are associated with improved performance and model robustness.
+
+Once again, the data follows a 70:30 split between training and test data.
 
 ## Decision tree {-}
 
-Following the general rule-of-thumb, there is a 70:30 split among the training and testing data.
+For illustrative purposes a single decision tree is plotted below and its accuracy is examined. In this instance, the root node is whether or not an employee joined in 2018. If they did not join in 2018, the tree spits into interior nodes relating to payment tier, education, and gender, among others to make its prediction. 
+
+Decision trees typically lack predictive performance. However, in this instance the accuracy rate is 82%.
 
 ```{r}
 
@@ -772,22 +789,13 @@ accuracy <- sum(predictions == actual_labels) / length(actual_labels) * 100
 # Print the accuracy
 #cat("Accuracy:", accuracy, "%\n")
 
-##pruning - before pruning, variance is high and bias is low
-
-# cv_emp_dt1 <- prune(emp_dt1, cp = emp_dt1$cptable[which.min(emp_dt1$cptable[,"xerror"]),"CP"])
-# #
-# # plotcp(emp_dt1)
-# #
-# rpart.plot(cv_emp_dt1)
-
-
 ```
 
 ## Baseline Random Forest
 
-The results from the baseline random forest are presented below. Random Forests help to reduce tree correlation. It does so by using split-variable randomisation. In the baseline model, number of trees are set to 500 by default. It is possible to alter the m(try) parameter, but currently it is set to the square root of the number of parameters, given that this standard when doing a classification problem.
+To enhance predictive power, the results from the baseline random forest are presented below. In the baseline model, number of trees are set to 500 by default. The m(try) parameter is set to the square root of the number of parameters, given that this standard when investigating a classification problem. The default node size is 1 and the default sampling scheme is one with replacement. 
 
-```{r Figure2, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure2}", fig.height = 3, fig.width = 6, dev = 'png'}
+```{r Figure8, warning =  FALSE, fig.align = 'center', fig.cap = "Caption Here \\label{Figure8}", fig.height = 3, fig.width = 6, dev = 'png'}
 
 library(ranger)
 #number of features
@@ -851,35 +859,7 @@ metrics_df <- data.frame(Metric = c("Accuracy", "F1 Score", "Recall", "Precision
 
 ```
 
-
 ```{r Table9 , results = 'asis'}
-
-#print(metrics_df)
-
-metrics <- xtable(metrics_df, caption = "Metrics for Baseline Random Forest \\label{tab1}")
-  print.xtable(metrics,
-             # tabular.environment = "longtable",
-             floating = TRUE,
-             table.placement = 'H',
-             # scalebox = 0.3,
-             comment = FALSE,
-             caption.placement = 'bottom'
-             )
-  
-  
-  
-```
-
-```{r Table10 , results = 'asis'}
-
-#actual_labels_rf <- as.factor(actual_labels_rf)
-
-# Create a confusion matrix
-#confusion_matrix <- confusionMatrix(data = as.factor(predicted_labels_rf), reference = actual_labels_rf)
-
-# Print the confusion matrix
-#print(confusion_matrix)
-
 confusion_matrixrf1 <- tibble(
   Reference = c(1, 1, 0, 0),
   Prediction = c(1, 0, 1, 0),
@@ -899,13 +879,46 @@ confusionrf1 <- xtable(confusion_matrixrf1, caption = "Confusion Matrix for Base
              comment = FALSE,
              caption.placement = 'bottom'
              )
-
 ```
 
 
-Comparing the training and testing error, the test error (15.1%) is slightly higher than the training error (11.8%). This may indicate that there is some level of overfitting, given that the training data performs better, however it does not appear to be substantial. The model's performance is still reasonably good. 
+```{r Table10 , results = 'asis'}
 
-To continue to examine the bias-variance tradeoff, the learning curve is plotted. At small sample sizes, it can be seen that the test accuracy is much lower than the training dataset. The high accuracy for the training set at lower sample sizes indicates overfitting. Once the sample size reaches over 2000, the accuracy between the training and the testing set begin to converge, reducing the bias-variance tradeoff.
+#print(metrics_df)
+
+metrics <- xtable(metrics_df, caption = "Metrics for Baseline Random Forest \\label{tab1}")
+  print.xtable(metrics,
+             # tabular.environment = "longtable",
+             floating = TRUE,
+             table.placement = 'H',
+             # scalebox = 0.3,
+             comment = FALSE,
+             caption.placement = 'bottom'
+             )
+  
+  
+  
+```
+
+```{r }
+
+#actual_labels_rf <- as.factor(actual_labels_rf)
+
+# Create a confusion matrix
+#confusion_matrix <- confusionMatrix(data = as.factor(predicted_labels_rf), reference = actual_labels_rf)
+
+# Print the confusion matrix
+#print(confusion_matrix)
+
+
+
+```
+
+In terms of accuracy, the model's accuracy on the training data is 87%, compared to 85% on the test data.Comparing the training and testing error, the test error (15.1%) is slightly higher than the training error (13%). This may indicate that there is some level of overfitting, given that the training data performs better, however it does not appear to be substantial. 
+
+In terms of other metrics, the F1 score is high at 74% indicating that the model's performance is overall very good. The precision and recall indicate that the model is again better at predicting positive outcomes than negative outcomes. A metric for area under the ROC curve is also included. The ROC compares the sensitivity and specificity of the model. As the area under the curve is 80%, this indicates that the overall predictive performance of the model is good and the model is reliable for this classification task. The model is effective in distinguishing between between the two classes of whether an employee leaves or not. 
+
+
 
 ```{r}
 
@@ -950,23 +963,21 @@ accu <- xtable(accuracy_df, caption = "More Metrics for Baseline Random Forest \
              )
 ```
 
-There are several hyper-parameters to consider in this model, including the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, and the splitting rule to use during tree construction.
+## Hyper-parameter Tuned Random Forest
 
-The first parameter I adjust is the number of trees. If I have 15 variables, I will make 150 trees. The default above was 500 trees. 
-
-Adjusting the number of trees down from 500 to 150 increases the accuracy of the model, but marginally. Accuracy increased from 84.81% to 84.96%.
+Although the baseline model performed well, there are several hyper-parameters to consider and adjust in this model, including the number of trees, the number of features to consider at a given split, the complexity of each tree, the sampling scheme, and the splitting rule to use during tree construction. The model hyperparameters are adjusted to achieve the best mix of bias and variance.
 
 Following the baseline random forest model, a grid search is conducted over a range of hyperparameters in an attempt to select the optimal model. 
 
-The default sampling scheme for a random forest is one with replacement.
+Regarding number of trees, the grid search compares models with 100, 150 and 250 trees. Given that there are 15 variables, the rule of thumb is generally 150 trees. A range around 150 is thus investigated.
 
-Sample size influences how many observations are drawn for the training of each tree. Decreasing the sample size leads to more diverse trees and less between-tree correlation, which has a positive effect on predictive accuracy. Having a few features that 
+Nodes sizes of 1, 3, 5 and 10 is included in the grid search. Increasing node size decreases tree complexity. 
 
-Having many categorical features with varying number of levels, such as experience or education in this case, or unbalanced categories, then sampling with replacement can lead to biased results. Sampling without replacement can thus lead to a less biased use of all the levels across the trees in the random forest.  
+Sample size influences how many observations are drawn for the training of each tree (Boehmke and Greenwell, 2019). Decreasing the sample size leads to more diverse trees and less between-tree correlation, which has a positive effect on predictive accuracy. Having a few features that dominate, reducing the sample size can help reduce between-tree correlation. In other words, smaller sample size fractions can increase the variance of the model, risking overfitting, but lower the model's bias. Sample fractions of 50%, 63% and 80% are considered. 
 
-I included the number of trees in the search. As a rule of thumb, the number of trees is 100, 150 and 250 were selected as possibilities.
+Having many categorical features with varying number of levels, such as experience or education in this case, or unbalanced categories, then sampling with replacement can lead to biased results. Sampling without replacement can thus lead to a less biased use of all the levels across the trees in the random forest. The default sampling scheme for a random forest is one with replacement. As a result, the grid search compares models with and without replacement. 
 
-To select the best model, the grid  search finds the out-of-bag error for each possible model. The model with the lowest RMSE is chosen as the best model. Comappring the RMSE of the baseline model to the tuned model the tuned model is a 1.9 percent improvement over the baseline model. Although this increase is small, the greater accuracy in predicting employee attrition, the better.
+To select the best model, the grid  search finds the out-of-bag error for each possible model. The model with the lowest RMSE is chosen as the best model. Comparing the RMSE of the baseline model to the new tuned model, the tuned model is a 1.9 percent improvement over the baseline model. 
 
 ```{r}
 # hyper_grid <- expand.grid(
@@ -1004,7 +1015,9 @@ To select the best model, the grid  search finds the out-of-bag error for each p
 #   head(10)
 ```
 
-The best model selected is one with m(try) set to 4, a number of trees as 250, a node size of 1, sample without replacement, and a sample fraction of 0.63. 
+The best model selected is one with m(try) set to 4, a number of trees as 250, a node size of 1, sampling without replacement, and a sample fraction of 0.63. 
+
+Although the improvements are small, training accuracy increase to 89% and test accuracy to 86%. Consequently, the errors for both are overall smaller. The area under the ROC is unchanged compared to the baseline. The F1 score, however, rose to 77% indicating great overall performance. 
 
 ```{r}
 emp_rf2 <- ranger(
@@ -1018,7 +1031,7 @@ emp_rf2 <- ranger(
   respect.unordered.factors = "order",
   seed = 123)
 
-(final_rmse <- sqrt(emp_rf2$prediction.error))
+#(final_rmse <- sqrt(emp_rf2$prediction.error))
 
 #prediction
 predictions_rf2 <- predict(emp_rf2, data = emp_test)
@@ -1131,13 +1144,6 @@ test_errorrf2 <- 1 - test_accuracyrf2
 # cat("Test Error:", test_error, "\n")
 ```
 
-## Bias-Variance Trade-off {-}
-
-It is also important to consider the bias-variance trade-off. Prediction errors are generally a result of either bias or variance. In general, decreasing bias will almost always lead to greater variance. Bias is the difference between the expected prediction and the correct value (linear models have high levels of bias).
-
-Variance error is the variability of a model prediction for a given data point. Some models can potentially overfit the training data, resulting in accurate results against the training data but typically poor results against the test data. In other words, the model does not generalise well.
-
-We can adjust the model hyperparameters to achieve the best mix of bias and variance. 
 
 ```{r Table14 , results = 'asis'}
 
@@ -1156,9 +1162,10 @@ accurf <- xtable(accuracyrf_df, caption = "More Metrics for Tuned Random Forest 
 
 ```
 
+
 Assessing variable importance gives an indication of the variance in the model. If the model relies heavily on a few features, then this indicates high variance and over-fitting.  Comparing the two graphs below, it can be seen that with impurity-based variable importance, the model heavily relies on the joining year, specifically, those who joined the company in 2018. This is most likely due to the high attrition rate seen in the exploratory data analysis. Under permutation-based variable importance, there is grater emphasis on more features such as education, payment tier and gender, despite joining year being the most important predictive feature.
 
-Comparing the graphs below to the variable importance plot for the logistic regression, the random forest model appears to suffer from higher variance due to its heavier reliance on certain features. This shows a clear example of the bias-variance trade-off, given the improved accuracy of the random forrest model compared to the logistic model.
+Comparing the graphs below to the variable importance plot for the logistic regression, the random forest model appears to suffer from higher variance due to its heavier reliance on certain features. This shows a clear example of the bias-variance trade-off, given the improved accuracy of the random forest model compared to the logistic model.
 
 ```{r}
 emp_train$Experience <- emp_train$ExperienceInCurrentDomain
@@ -1248,15 +1255,13 @@ gridExtra::grid.arrange(p1, p2, nrow = 1)
 
 
 
-# Conclusion
+# Conclusion {-}
 
-In order to predict employee attrition, various models and their accuracy levels are assessed. 
+In order to predict employee attrition, various models and their accuracy levels are assessed. The logistic regression model was effective in predicting attrition, with the full model achieving an accuracy rate of 71% on the test data. However, the model showed a bias towards false negatives. On the other hand, the K-Nearest Neighbors (KNN) model outperformed logistic regression, with an accuracy rate of 83% on the test data. 
 
-The best model in predicting is the random forest model after hyperparameter tuning. This model achieves an accuracy rate of 86 percent.
+The best model in predicting employee attrition is the random forest model after hyperparameter tuning. This model achieves an accuracy rate of 86 percent against the test data. It performs well on all metrics and, despite slight over-fitting, the model has good generalisability to testing data. 
 
-When assessing the bias-variance tradeoff...
-
-To cite this package, simply type citation("Texevier") in Rstudio to get the citation for @Texevier (Note that uncited references in your bibtex file will not be included in References).
+Therefore, it is recommended that the company at hand employ this tuned random forest model for future predictions of employee attrition rates in order to forecast future turnover and its associated risks and costs, as well as attempt to combat these high attrition rates.
 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->
@@ -1265,8 +1270,7 @@ To cite this package, simply type citation("Texevier") in Rstudio to get the cit
 
 # References {-}
 
-<div id="refs"></div>
-
+Boehmke, B. and Greenwell, B.M., 2019. Hands-on machine learning with R. CRC press.
 
 
 

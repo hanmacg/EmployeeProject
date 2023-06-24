@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.6.22)  23 JUN 2023 12:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.6.22)  24 JUN 2023 11:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -659,12 +659,6 @@ LaTeX Warning: Label `tab1' multiply defined.
 
 LaTeX Warning: Label `tab1' multiply defined.
 
-
-LaTeX Warning: Label `tab1' multiply defined.
-
-
-LaTeX Warning: Label `tab1' multiply defined.
-
 )
 \openout1 = `Final_project.aux'.
 
@@ -735,109 +729,107 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: threeparttable package is loaded.
 Package caption Info: wrapfig package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 215.
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 215.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 215.
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 215.
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 215.
+(Font)              <9> on input line 218.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 215.
+(Font)              <6> on input line 218.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 215.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 215.
+(Font)              <5> on input line 218.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 215.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 215.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 218.
 (c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 215.
+(Font)              <10.95> on input line 218.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 215.
-<Final_project_files/figure-latex/unnamed-chunk-2-1.pdf, id=48, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-2-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-2-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-2-1.pdf  used on input line 270.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
+(Font)              <8> on input line 218.
 [1
 
 
-{c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-<Final_project_files/figure-latex/unnamed-chunk-3-1.pdf, id=67, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-3-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-3-1.pdf  used on input line 272.
+{c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}]
+<Final_project_files/figure-latex/Figure1-1.png, id=64, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure1-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure1-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure1-1.png  used on input line 287.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+<Final_project_files/figure-latex/Figure2-1.png, id=65, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure2-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure2-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure2-1.png  used on input line 296.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+[2 <./Final_project_files/figure-latex/Figure1-1.png> <./Final_project_files/figure-latex/Figure2-1.png>]
+<Final_project_files/figure-latex/Figure3-1.png, id=74, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure3-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure3-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure3-1.png  used on input line 318.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+<Final_project_files/figure-latex/Figure4-1.png, id=75, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure4-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure4-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure4-1.png  used on input line 327.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+[3 <./Final_project_files/figure-latex/Figure3-1.png>]
+<Final_project_files/figure-latex/Figure5-1.png, id=82, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure5-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure5-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure5-1.png  used on input line 336.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+<Final_project_files/figure-latex/Figure6-1.png, id=83, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure6-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure6-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure6-1.png  used on input line 351.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+[4 <./Final_project_files/figure-latex/Figure4-1.png> <./Final_project_files/figure-latex/Figure5-1.png>]
+<Final_project_files/figure-latex/Figure7-1.png, id=92, 433.62pt x 216.81pt>
+File: Final_project_files/figure-latex/Figure7-1.png Graphic file (type png)
+<use Final_project_files/figure-latex/Figure7-1.png>
+Package pdftex.def Info: Final_project_files/figure-latex/Figure7-1.png  used on input line 360.
+(pdftex.def)             Requested size: 433.61894pt x 216.80946pt.
+[5 <./Final_project_files/figure-latex/Figure6-1.png> <./Final_project_files/figure-latex/Figure7-1.png>] [6] [7]
+<Final_project_files/figure-latex/Table4-1.pdf, id=114, 433.62pt x 361.35pt>
+File: Final_project_files/figure-latex/Table4-1.pdf Graphic file (type pdf)
+<use Final_project_files/figure-latex/Table4-1.pdf>
+Package pdftex.def Info: Final_project_files/figure-latex/Table4-1.pdf  used on input line 552.
 (pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[2 <./Final_project_files/figure-latex/unnamed-chunk-2-1.pdf>]
-<Final_project_files/figure-latex/unnamed-chunk-4-1.pdf, id=80, 433.62pt x 361.35pt>
+[8] [9 <./Final_project_files/figure-latex/Table4-1.pdf>] [10]
+<Final_project_files/figure-latex/unnamed-chunk-4-1.pdf, id=138, 433.62pt x 361.35pt>
 File: Final_project_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pdf)
 <use Final_project_files/figure-latex/unnamed-chunk-4-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-4-1.pdf  used on input line 289.
+Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-4-1.pdf  used on input line 683.
 (pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[3 <./Final_project_files/figure-latex/unnamed-chunk-3-1.pdf>]
-<Final_project_files/figure-latex/unnamed-chunk-5-1.pdf, id=93, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-5-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-5-1.pdf  used on input line 291.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[4 <./Final_project_files/figure-latex/unnamed-chunk-4-1.pdf>]
-<Final_project_files/figure-latex/unnamed-chunk-6-1.pdf, id=103, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-6-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-6-1.pdf  used on input line 293.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[5 <./Final_project_files/figure-latex/unnamed-chunk-5-1.pdf>]
-<Final_project_files/figure-latex/unnamed-chunk-7-1.pdf, id=113, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-7-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-7-1.pdf  used on input line 301.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[6 <./Final_project_files/figure-latex/unnamed-chunk-6-1.pdf>]
-<Final_project_files/figure-latex/unnamed-chunk-8-1.pdf, id=123, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-8-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-8-1.pdf  used on input line 303.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[7 <./Final_project_files/figure-latex/unnamed-chunk-7-1.pdf>] [8 <./Final_project_files/figure-latex/unnamed-chunk-8-1.pdf>] [9]
-<Final_project_files/figure-latex/Table2-1.pdf, id=150, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/Table2-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/Table2-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/Table2-1.pdf  used on input line 416.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[10] [11 <./Final_project_files/figure-latex/Table2-1.pdf>] [12] [13]
-<Final_project_files/figure-latex/unnamed-chunk-11-1.pdf, id=184, 433.62pt x 361.35pt>
+[11] [12 <./Final_project_files/figure-latex/unnamed-chunk-4-1.pdf>] [13] [14]
+<Final_project_files/figure-latex/unnamed-chunk-11-1.pdf, id=174, 433.62pt x 361.35pt>
 File: Final_project_files/figure-latex/unnamed-chunk-11-1.pdf Graphic file (type pdf)
 <use Final_project_files/figure-latex/unnamed-chunk-11-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-11-1.pdf  used on input line 593.
+Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-11-1.pdf  used on input line 876.
 (pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[14 <./Final_project_files/figure-latex/unnamed-chunk-11-1.pdf>] [15] [16] [17]
-<Final_project_files/figure-latex/unnamed-chunk-17-1.pdf, id=219, 433.62pt x 361.35pt>
-File: Final_project_files/figure-latex/unnamed-chunk-17-1.pdf Graphic file (type pdf)
-<use Final_project_files/figure-latex/unnamed-chunk-17-1.pdf>
-Package pdftex.def Info: Final_project_files/figure-latex/unnamed-chunk-17-1.pdf  used on input line 793.
-(pdftex.def)             Requested size: 433.61894pt x 361.34912pt.
-[18] [19 <./Final_project_files/figure-latex/unnamed-chunk-17-1.pdf>]
+[15] [16 <./Final_project_files/figure-latex/unnamed-chunk-11-1.pdf>] [17]
 No file Final_project.bbl.
-[20] (./Final_project.aux)
+[18] (./Final_project.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-06-16>
@@ -846,21 +838,21 @@ L3 programming layer <2023-06-16>
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `Final_project.out' has not changed.
-(rerunfilecheck)             Checksum: EDEEB0F8148D3170F2E7C25429A5E25A;1477.
+(rerunfilecheck)             Checksum: 23787D2D88B25EC658631D9F60C31F40;1543.
  ) 
 Here is how much of TeX's memory you used:
- 17938 strings out of 477682
- 329312 string characters out of 5829550
- 1865763 words of memory out of 5000000
- 38076 multiletter control sequences out of 15000+600000
- 568445 words of font info for 74 fonts, out of 8000000 for 9000
+ 17974 strings out of 477682
+ 330279 string characters out of 5829550
+ 1864763 words of memory out of 5000000
+ 38114 multiletter control sequences out of 15000+600000
+ 568126 words of font info for 73 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,12n,79p,550b,926s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr9.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri7.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri9.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt9.pfb>
-Output written on Final_project.pdf (20 pages, 292627 bytes).
+ 75i,12n,79p,550b,892s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr9.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri7.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri9.pfb><c:/Users/hanna/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt9.pfb>
+Output written on Final_project.pdf (18 pages, 259574 bytes).
 PDF statistics:
- 310 PDF objects out of 1000 (max. 8388607)
- 243 compressed objects within 3 object streams
+ 256 PDF objects out of 1000 (max. 8388607)
+ 196 compressed objects within 2 object streams
  63 named destinations out of 1000 (max. 500000)
  139 words of extra memory for PDF output out of 10000 (max. 10000000)
 
